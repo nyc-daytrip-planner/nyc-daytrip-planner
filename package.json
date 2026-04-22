@@ -1,0 +1,29 @@
+{
+  "name": "nyc-daytrip-planner",
+  "version": "1.0.0",
+  "description": "A web application for planning NYC day trips with friends, family, or partners. Users can explore activities, add them into a planner, save plans, review locations, and interact with friends.",
+  "homepage": "https://github.com/nyc-daytrip-planner/nyc-daytrip-planner#readme",
+  "bugs": {
+    "url": "https://github.com/nyc-daytrip-planner/nyc-daytrip-planner/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nyc-daytrip-planner/nyc-daytrip-planner.git"
+  },
+  "license": "ISC",
+  "author": "Alan Hu, Connor Hull, Yang Gao, Olisa Okose",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node app.js",
+    "seed": "node seed.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "express": "^5.2.1",
+    "express-handlebars": "^9.0.1",
+    "express-session": "^1.19.0",
+    "mongodb": "^7.2.0",
+    "xss": "^1.0.15"
+  }
+}
