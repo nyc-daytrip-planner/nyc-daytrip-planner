@@ -1,0 +1,26 @@
+<nav class="navbar">
+  <div class="navbar-brand">
+    <a href="/explore">DayOut NYC</a>
+  </div>
+
+  <div class="navbar-links">
+    {{#if user}}
+      <a href="/explore" class="nav-link">Explore</a>
+      <a href="/planner" class="nav-link">Planner</a>
+      <a href="/friends" class="nav-link">Friends</a>
+      <a href="/profile" class="nav-link">Profile</a>
+
+      {{#if (eq user.role 'admin')}}
+        <a href="/admin" class="nav-link admin-link">Admin</a>
+      {{/if}}
+
+      <form method="POST" action="/logout" class="logout-form">
+        <button type="submit" class="btn-logout">Logout</button>
+      </form>
+
+    {{else}}
+      <a href="/login" class="nav-link">Login</a>
+      <a href="/signup" class="nav-link">Sign Up</a>
+    {{/if}}
+  </div>
+</nav>
