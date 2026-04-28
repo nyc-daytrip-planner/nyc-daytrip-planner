@@ -1,0 +1,97 @@
+<div class="auth-container">
+  <div class="auth-card">
+
+    <h1>Create Account</h1>
+    <p class="auth-subtitle">Sign up to start planning your NYC day trips</p>
+
+    {{#if error}}
+      <div class="error-box">
+        <p>{{error}}</p>
+      </div>
+    {{/if}}
+
+    <form id="signup-form" method="POST" action="/signup">
+
+      <div class="form-group">
+        <label for="firstName">First Name</label>
+        <input
+          type="text"
+          id="firstName"
+          name="firstName"
+          placeholder="Enter your first name"
+          value="{{firstName}}"
+          autocomplete="given-name"
+        />
+        <span class="field-error" id="firstName-error"></span>
+      </div>
+
+      <div class="form-group">
+        <label for="lastName">Last Name</label>
+        <input
+          type="text"
+          id="lastName"
+          name="lastName"
+          placeholder="Enter your last name"
+          value="{{lastName}}"
+          autocomplete="family-name"
+        />
+        <span class="field-error" id="lastName-error"></span>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          placeholder="Enter your email"
+          value="{{email}}"
+          autocomplete="email"
+        />
+        <span class="field-error" id="email-error">{{emailError}}</span>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          placeholder="Enter your password"
+          autocomplete="new-password"
+        />
+        <span class="field-error" id="password-error"></span>
+        <ul class="password-requirements">
+          <li>At least 8 characters</li>
+          <li>At least one uppercase letter</li>
+          <li>At least one lowercase letter</li>
+          <li>At least one number</li>
+          <li>At least one special character (!@#$%^&*)</li>
+          <li>No spaces</li>
+        </ul>
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Confirm Password</label>
+        <input
+          type="password"
+          id="confirmPassword"
+          name="confirmPassword"
+          placeholder="Confirm your password"
+          autocomplete="new-password"
+        />
+        <span class="field-error" id="confirmPassword-error"></span>
+      </div>
+
+      <button type="submit" class="btn-primary" id="signup-btn">
+        Create Account
+      </button>
+
+    </form>
+
+    <p class="auth-redirect">
+      Already have an account? <a href="/login">Log in here</a>
+    </p>
+
+  </div>
+</div>

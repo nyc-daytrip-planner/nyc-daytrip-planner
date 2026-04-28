@@ -1,0 +1,19 @@
+<h1>Login</h1>
+
+{{#if error}}
+  <p class="error">{{error}}</p>
+{{/if}}
+
+<form id="login-form" method="POST" action="/login">
+  <label for="email">Email</label>
+  <input type="email" name="email" id="email" value="{{email}}" />
+  <span class="field-error" id="email-error"></span>
+
+  <label for="password">Password</label>
+  <input type="password" name="password" id="password" />
+  <span class="field-error" id="password-error"></span>
+
+  <button type="submit" name="submit_button" id="submit_button">Login</button>
+</form>
+
+<p><a href="/signup">Don't have an account? Sign up here</a></p>
