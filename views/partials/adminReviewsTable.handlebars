@@ -1,0 +1,45 @@
+{{!--
+  Admin moderation: all reviews table. for developer who responsible for signin/signup includes this in their admin
+  dashboard via:
+    {{> adminReviewsTable reviews=allReviews}}
+  The route handler should populate `allReviews` via getAllReviewsForAdmin().
+  Delete buttons hit the existing DELETE /reviews/:id endpoint (admin role
+  enforced server-side); no separate admin-only route needed.
+--}}
+<section class="admin-section admin-reviews">
+  <header class="admin-section-header">
+    <h2>Reviews</h2>
+    <p class="admin-count">{{reviews.length}} total</p>
+  </header>
+
+  {{#if reviews.length}}
+    <table class="admin-table" data-resource="reviews">
+      <thead>
+        <tr>
+          <th>Location</th>
+          <th>Author</th>
+          <th>Rating</th>
+          <th>Text</th>
+          <th>Date</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each reviews}}
+          <tr data-review-id="{{this._id}}">
+            <td class="cell-location">{{this.locationName}}</td>
+            <td class="cell-author">{{this.authorEmail}}</td>
+            <td class="cell-rating">{{this.rating}} / 5</td>
+            <td class="cell-text">{{this.reviewText}}</td>
+            <td class="cell-date">{{this.createdAt}}</td>
+            <td class="cell-actions">
+              <button type="button" class="admin-delete-btn" data-resource="reviews" data-id="{{this._id}}">Delete</button>
+            </td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  {{else}}
+    <p class="admin-empty">No reviews to moderate.</p>
+  {{/if}}
+</section>

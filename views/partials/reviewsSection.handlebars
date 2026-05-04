@@ -1,0 +1,68 @@
+{{!--
+  Reusable reviews section.
+  for whoever dev explore part drop into /explore/:id detail view via:
+    {{> reviewsSection location=location reviewsList=reviewsList userReview=userReview}}
+  Expects the route to also expose `user` on res.locals (already done in app.js).
+--}}
+<section class="reviews-section" data-location-id="{{location._id}}">
+  <header class="reviews-header">
+    <h2>Reviews</h2>
+    <p class="reviews-aggregate">
+      <span class="reviews-avg">
+        {{#if location.averageRating}}{{location.averageRating}} / 5{{else}}No rating yet{{/if}}
+      </span>
+      <span class="reviews-count">({{location.totalReviews}} review{{#unless (eq location.totalReviews 1)}}s{{/unless}})</span>
+    </p>
+  </header>
+
+  {{#if user}}
+    {{#unless userReview}}
+      <form id="review-form" class="review-form" novalidate>
+        <input type="hidden" name="locationId" value="{{location._id}}">
+        <div class="form-row">
+          <label for="review-rating">Rating</label>
+          <select id="review-rating" name="rating" required>
+            <option value="">Select...</option>
+            <option value="5">5 - Excellent</option>
+            <option value="4">4 - Good</option>
+            <option value="3">3 - OK</option>
+            <option value="2">2 - Poor</option>
+            <option value="1">1 - Bad</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label for="review-text">Your review</label>
+          <textarea id="review-text" name="reviewText" rows="3" required></textarea>
+        </div>
+        <button type="submit">Submit review</button>
+        <p class="review-error" role="alert" hidden></p>
+      </form>
+    {{/unless}}
+  {{else}}
+    <p class="reviews-login-prompt"><a href="/login">Log in</a> to write a review.</p>
+  {{/if}}
+
+  <ul id="reviews-list" class="reviews-list">
+    {{#each reviewsList}}
+      <li class="review" data-review-id="{{this._id}}" data-author-id="{{this.userId}}" data-rating="{{this.rating}}">
+        <header class="review-row-header">
+          <span class="review-author">{{this.authorFirstName}}</span>
+          <span class="review-rating-static">{{this.rating}} / 5</span>
+        </header>
+        <p class="review-text">{{this.reviewText}}</p>
+        {{#if ../user}}
+          {{#if (eq this.userId ../user._id)}}
+            <div class="review-actions">
+              <button type="button" class="review-edit-btn">Edit</button>
+              <button type="button" class="review-delete-btn">Delete</button>
+            </div>
+          {{/if}}
+        {{/if}}
+      </li>
+    {{else}}
+      <li class="reviews-empty">Be the first to review this place.</li>
+    {{/each}}
+  </ul>
+</section>
+
+<script src="/js/reviews.js"></script>
