@@ -1,4 +1,4 @@
-import { users } from '../config/mongocollections.js';
+import { users } from '../config/mongoCollections.js';
 import { checkName, checkPassword, checkString, checkId, checkEmail } from '../helpers.js';
 import { ObjectId } from 'mongodb';
 import bcrypt from 'bcryptjs';
