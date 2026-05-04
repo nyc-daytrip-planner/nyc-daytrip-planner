@@ -22,6 +22,14 @@ A web application for planning NYC day trips with friends, family, or partners. 
 - Parks
 - Cafes
 
+## Prerequisites
+- Node.js >= 20.19.0
+- MongoDB running locally on `mongodb://localhost:27017/` (database name: `dayoutNYC`)
+
 ## How to Run
-1. npm install
-2. npm start
+1. `npm install`
+2. Make sure MongoDB is running
+3. `npm start` -> http://localhost:3000
+
+
+

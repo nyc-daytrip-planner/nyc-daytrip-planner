@@ -1,0 +1,17 @@
+{{!--
+  Temporary admin moderation host page.review part developer test the moderation
+  flow before signin/signup developer real /admin dashboard exists. Once signin/signup developer ships
+  views/admin/dashboard.handlebars, they include both partials there and this
+  host can be deleted.
+--}}
+<article class="admin-dashboard">
+  <header class="admin-dashboard-header">
+    <h1>Admin Moderation (temp host)</h1>
+    <p>Reviewing as <strong>{{user.firstName}}</strong> ({{user.email}})</p>
+  </header>
+
+  {{> adminReviewsTable reviews=allReviews}}
+  {{> adminCommentsTable comments=allComments}}
+</article>
+
+<script src="/js/admin-moderation.js"></script>

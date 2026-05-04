@@ -2,6 +2,7 @@ import usersRouter from './users.js';
 import locationsRouter from './locations.js';
 import plansRouter from './plans.js';
 import reviewsRouter from './reviews.js';
+import commentsRouter from './comments.js';
 import adminRouter from './admin.js';
 
 const constructorMethod = (app) => {
@@ -9,6 +10,7 @@ const constructorMethod = (app) => {
   app.use('/explore', locationsRouter);
   app.use('/plans', plansRouter);
   app.use('/reviews', reviewsRouter);
+  app.use('/comments', commentsRouter);
   app.use('/admin', adminRouter);
 
   app.get('/', (req, res) => {
