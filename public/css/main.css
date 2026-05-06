@@ -1,0 +1,108 @@
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
+  color: black;
+  background: white;
+  margin: 0;
+}
+
+main {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+a {
+  color: black;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+label {
+  display: block;
+  margin-top: 0.5rem;
+}
+input, select, textarea {
+  border: 1px solid gray;
+  padding: 0.4rem;
+  font: inherit;
+  margin-top: 0.25rem;
+}
+button {
+  background: darkslategray;
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  font: inherit;
+}
+
+.btn-logout,
+.review-delete-btn,
+.comment-delete-btn,
+.admin-delete-btn {
+  background: crimson;
+}
+
+:focus-visible {
+  outline: 2px solid darkgray;
+  outline-offset: 2px;
+}
+
+.error,
+.error-box,
+.field-error,
+.review-error,
+.comment-error {
+  color: crimson;
+}
+
+.reviews-empty,
+.comments-empty,
+.admin-empty,
+.admin-count,
+.review-rating-static {
+  color: gray;
+  font-size: 0.9em;
+}
+
+.navbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid gray;
+}
+.navbar-brand a {
+  font-weight: bold;
+  color: black;
+}
+.navbar-links {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-left: auto;
+}
+.logout-form {
+  margin: 0;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+}
+.admin-table th,
+.admin-table td {
+  border: 1px solid gray;
+  padding: 0.4rem;
+  text-align: left;
+  vertical-align: top;
+}
+.cell-text {
+  word-break: break-word;
+}
+
+[hidden] { display: none; }

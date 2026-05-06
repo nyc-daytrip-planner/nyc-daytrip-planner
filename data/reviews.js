@@ -37,6 +37,7 @@ export async function createReview({ locationId, userId, rating, reviewText }) {
   userId = checkId(userId);
   rating = checkRating(rating);
   reviewText = checkString(reviewText);
+  if (reviewText.length > 2000) throw 'Review text cannot be longer than 2000 characters';
 
   const locationsCol = await locations();
   const location = await locationsCol.findOne({ _id: new ObjectId(locationId) });
@@ -125,6 +126,7 @@ export async function updateReview(reviewId, userId, { rating, reviewText }) {
   userId = checkId(userId);
   rating = checkRating(rating);
   reviewText = checkString(reviewText);
+  if (reviewText.length > 2000) throw 'Review text cannot be longer than 2000 characters';
 
   const reviewsCol = await reviews();
   const existing = await reviewsCol.findOne({ _id: new ObjectId(reviewId) });
@@ -174,7 +176,7 @@ export async function getAllReviewsForAdmin() {
     authorEmail: usersMap.get(r.userId.toString())?.email || '(deleted user)',
     rating: r.rating,
     reviewText: r.reviewText,
-    createdAt: r.createdAt
+    createdAt: r.createdAt.toISOString().slice(0, 16).replace('T', ' ')
   }));
 }
 
