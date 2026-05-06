@@ -37,9 +37,20 @@
       // Decrement counter on the section header.
       const section = document.querySelector('.admin-' + resource);
       const countEl = section ? section.querySelector('.admin-count') : null;
+      const remaining = section ? section.querySelectorAll('tbody tr').length : 0;
       if (countEl) {
-        const remaining = section.querySelectorAll('tbody tr').length;
         countEl.textContent = remaining + ' total';
+      }
+
+      // Replace the now-empty table with the empty-state placeholder.
+      if (section && remaining === 0) {
+        const table = section.querySelector('.admin-table');
+        if (table) {
+          const empty = document.createElement('p');
+          empty.className = 'admin-empty';
+          empty.textContent = 'No ' + resource + ' to moderate.';
+          table.replaceWith(empty);
+        }
       }
     } catch (err) {
       btn.disabled = false;

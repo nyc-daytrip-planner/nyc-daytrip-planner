@@ -10,6 +10,7 @@ export async function createComment({ locationId, userId, text }) {
   locationId = checkId(locationId);
   userId = checkId(userId);
   text = checkString(text);
+  if (text.length > 1000) throw 'Comment cannot be longer than 1000 characters';
 
   const locationsCol = await locations();
   const location = await locationsCol.findOne({ _id: new ObjectId(locationId) });
@@ -129,6 +130,6 @@ export async function getAllCommentsForAdmin() {
     userId: c.userId.toString(),
     authorEmail: usersMap.get(c.userId.toString())?.email || '(deleted user)',
     text: c.text,
-    createdAt: c.createdAt
+    createdAt: c.createdAt.toISOString().slice(0, 16).replace('T', ' ')
   }));
 }

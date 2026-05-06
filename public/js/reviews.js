@@ -185,7 +185,12 @@
       editForm.innerHTML =
         '<div class="form-row"><label>Rating ' +
         '<select name="rating" required>' +
-        ['', 5, 4, 3, 2, 1].map((v) => '<option value="' + v + '">' + (v === '' ? 'Select...' : v) + '</option>').join('') +
+        '<option value="">Select...</option>' +
+        '<option value="5">5 - Excellent</option>' +
+        '<option value="4">4 - Good</option>' +
+        '<option value="3">3 - OK</option>' +
+        '<option value="2">2 - Poor</option>' +
+        '<option value="1">1 - Bad</option>' +
         '</select></label></div>' +
         '<div class="form-row"><label>Your review <textarea name="reviewText" rows="3" required></textarea></label></div>' +
         '<button type="submit">Save</button> ' +

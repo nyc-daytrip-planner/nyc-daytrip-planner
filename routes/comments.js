@@ -4,11 +4,14 @@ import { createComment, deleteComment } from '../data/comments.js';
 const router = Router();
 
 function mapError(res, e) {
-  const msg = typeof e === 'string' ? e : 'Server error';
+  if (typeof e !== 'string') {
+    console.error(e);
+    return res.status(500).json({ ok: false, error: 'Server error' });
+  }
   let status = 400;
-  if (/own comment/i.test(msg)) status = 403;
-  else if (/no comment found|no location found/i.test(msg)) status = 404;
-  return res.status(status).json({ ok: false, error: msg });
+  if (/own comment/i.test(e)) status = 403;
+  else if (/no comment found|no location found/i.test(e)) status = 404;
+  return res.status(status).json({ ok: false, error: e });
 }
 
 // AJAX: post a new comment
