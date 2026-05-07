@@ -4,7 +4,10 @@ const router = Router();
 router.route('/') // main page
   .get(async (req, res) => {
     // would like this to render an empty calender for the current day on the frontend 
-    res.render('planner', { title: 'Planner' });
+    res.render('planner', {
+      title: 'Planner',
+      date: new Date().toISOString().split('T')[0] // passes date so that frontend knows current date
+    });
   })
   .post(async (req, res) => {
     // this will give the user the ability to create a new plan
