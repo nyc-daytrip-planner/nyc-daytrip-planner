@@ -1,0 +1,49 @@
+<article class="location-detail" data-location-id="{{location._id}}">
+  <header class="location-detail-header">
+    <div class="location-title-row">
+      <h1>{{location.name}}</h1>
+      {{#if user}}
+        {{#unless isPending}}
+          <button id="favorite-btn" type="button" class="favorite-btn" data-favorited="{{isFavorited}}">
+            {{#if isFavorited}}&#9733; Favorited{{else}}&#9734; Favorite{{/if}}
+          </button>
+        {{/unless}}
+      {{/if}}
+    </div>
+
+    {{#if isPending}}
+      <p class="pending-banner">This location is pending admin approval.</p>
+    {{/if}}
+
+    <p class="location-meta">
+      <span class="location-type">{{location.type}}</span>
+      {{#if location.priceCategory}}
+        <span class="location-price">{{priceLabel location.priceCategory}}</span>
+      {{/if}}
+      <span class="reviews-aggregate">
+        {{#if location.averageRating}}
+          &#9733; {{location.averageRating}} / 5
+          <span class="muted">({{location.totalReviews}} review{{#unless (eq location.totalReviews 1)}}s{{/unless}})</span>
+        {{else}}
+          <span class="muted">No rating yet</span>
+        {{/if}}
+      </span>
+    </p>
+
+    {{#if location.address}}
+      <p class="location-address">{{location.address}}{{#if location.zipCode}}, {{location.zipCode}}{{/if}}</p>
+    {{/if}}
+    {{#if location.phone}}<p class="location-contact">Phone: {{location.phone}}</p>{{/if}}
+    {{#if location.website}}
+      <p class="location-contact">
+        Website: <a href="{{location.website}}" target="_blank" rel="noopener noreferrer">{{location.website}}</a>
+      </p>
+    {{/if}}
+  </header>
+
+  {{> reviewsSection location=location reviewsList=reviewsList userReview=userReview}}
+
+  {{> commentsSection location=location commentsList=commentsList}}
+</article>
+
+<script src="/js/locationDetail.js"></script>

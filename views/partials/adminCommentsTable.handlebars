@@ -1,0 +1,40 @@
+{{!--
+  Admin moderation: all comments table. Same conventions as adminReviewsTable.
+  Include via:
+    {{> adminCommentsTable comments=allComments}}
+--}}
+<section class="admin-section admin-comments">
+  <header class="admin-section-header">
+    <h2>Comments</h2>
+    <p class="admin-count">{{comments.length}} total</p>
+  </header>
+
+  {{#if comments.length}}
+    <table class="admin-table" data-resource="comments">
+      <thead>
+        <tr>
+          <th>Location</th>
+          <th>Author</th>
+          <th>Text</th>
+          <th>Date</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each comments}}
+          <tr data-comment-id="{{this._id}}">
+            <td class="cell-location">{{this.locationName}}</td>
+            <td class="cell-author">{{this.authorEmail}}</td>
+            <td class="cell-text">{{this.text}}</td>
+            <td class="cell-date">{{this.createdAt}}</td>
+            <td class="cell-actions">
+              <button type="button" class="admin-delete-btn" data-resource="comments" data-id="{{this._id}}">Delete</button>
+            </td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  {{else}}
+    <p class="admin-empty">No comments to moderate.</p>
+  {{/if}}
+</section>

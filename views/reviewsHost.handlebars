@@ -1,0 +1,14 @@
+{{!--
+  Temporary host page so can manually test the reviews flow before
+  the real /explore/:id detail page. Once that lands, this
+  view can be deleted and the partial dropped into the template.
+--}}
+<article class="location-detail">
+  <h1>{{location.name}}</h1>
+  {{#if location.address}}<p class="location-address">{{location.address}}</p>{{/if}}
+  <p class="location-meta">{{location.type}}</p>
+</article>
+
+{{> reviewsSection location=location reviewsList=reviewsList userReview=userReview}}
+
+{{> commentsSection location=location commentsList=commentsList}}

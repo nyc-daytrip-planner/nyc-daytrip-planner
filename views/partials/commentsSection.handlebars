@@ -1,0 +1,47 @@
+{{!--
+  Reusable comments section. Sits below reviews on the location detail page.
+  for whoever developer explore drop into /explore/:id detail view via:
+    {{> commentsSection location=location commentsList=commentsList}}
+  Layout's res.locals.user is read directly inside the partial.
+--}}
+<section class="comments-section" data-location-id="{{location._id}}">
+  <header class="comments-header">
+    <h2>Comments</h2>
+  </header>
+
+  {{#if user}}
+    <form id="comment-form" class="comment-form" novalidate>
+      <input type="hidden" name="locationId" value="{{location._id}}">
+      <div class="form-row">
+        <label for="comment-text">Add a comment</label>
+        <textarea id="comment-text" name="text" rows="2" required></textarea>
+      </div>
+      <button type="submit">Post comment</button>
+      <p class="comment-error" role="alert" hidden></p>
+    </form>
+  {{else}}
+    <p class="comments-login-prompt"><a href="/login">Log in</a> to leave a comment.</p>
+  {{/if}}
+
+  <ul id="comments-list" class="comments-list">
+    {{#each commentsList}}
+      <li class="comment" data-comment-id="{{this._id}}" data-author-id="{{this.userId}}">
+        <header class="comment-row-header">
+          <span class="comment-author">{{this.authorFirstName}}</span>
+        </header>
+        <p class="comment-text">{{this.text}}</p>
+        {{#if ../user}}
+          {{#if (eq this.userId ../user._id)}}
+            <div class="comment-actions">
+              <button type="button" class="comment-delete-btn">Delete</button>
+            </div>
+          {{/if}}
+        {{/if}}
+      </li>
+    {{else}}
+      <li class="comments-empty">No comments yet.</li>
+    {{/each}}
+  </ul>
+</section>
+
+<script src="/js/comments.js"></script>

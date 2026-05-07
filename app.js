@@ -11,7 +11,8 @@ app.engine('handlebars', engine({
   layoutsDir: './views/layouts',
   partialsDir: './views/partials',
   helpers: {
-    eq: (a, b) => a === b
+    eq: (a, b) => a === b,
+    priceLabel: (n) => (Number.isInteger(n) && n > 0 ? '$'.repeat(n) : '')
   }
 }));
 app.set('view engine', 'handlebars');
