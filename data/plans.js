@@ -10,13 +10,15 @@ import { checkId, checkDate, checkString, checkTime } from '../helpers.js'
 // - delete a plan by id
 
 const exportedMethods = {
-  async getAllPlans(userId) { // 'plans/all' route
+  async getAllPlans(userId) {
+    // GET
     userId = checkId(userId)
     const planCollection = await plans()
     return await planCollection.find({ userId }).toArray()
   },
 
   async getPlanById(plan_id) {
+    // GET
     plan_id = checkId(plan_id)
     const planCollection = await plans()
     const plan = await planCollection.findOne({ _id: new ObjectId(plan_id) })
@@ -27,6 +29,7 @@ const exportedMethods = {
   },
 
   async getPlanActivities(plan_id) {
+    // GET
     plan_id = checkId(plan_id)
     const planCollection = await plans()
     const plan = await planCollection.findOne({ _id: new ObjectId(plan_id) })
@@ -37,6 +40,7 @@ const exportedMethods = {
   },
 
   async getPlanByDate(userId, date) {
+    // GET
     userId = checkId(userId)
     date = checkDate(date)
     const planCollection = await plans()
@@ -48,6 +52,7 @@ const exportedMethods = {
   },
 
   async newPlan(userId, title, date, isPublic = false, locations = []) {
+    // POST
     userId = checkId(userId)
     title = checkString(title)
     date = checkDate(date)
@@ -84,6 +89,7 @@ const exportedMethods = {
   },
 
   async addActivity(planId, locationId, startTime, endTime, notes = "") {
+    // POST
     planId = checkId(planId)
     locationId = checkId(locationId)
     startTime = checkTime(startTime)
@@ -110,6 +116,69 @@ const exportedMethods = {
     if (result.modifiedCount === 0) throw "Error: could not add activity"
 
     return await this.getPlanById(planId)
-  }
+  },
 
+  async updatePlan(planId, { title, date, status, isPublic } = {}) {
+    planId = checkId(planId)
+
+    const updateFields = {}
+
+    if (title != undefined) updateFields.title = checkString(title)
+    if (date != undefined) updateFields.date = checkDate(date)
+    if (status !== undefined) {
+      if (!['active', 'saved', 'completed'].includes(status))
+        throw "Error: invalid status"
+      updateFields.status = status
+    }
+
+    if (isPublic != undefined) {
+      if (typeof isPublic != 'boolean') throw "Error: must be boolean"
+      updateFields.isPublic = isPublic
+    }
+
+    if (Object.keys(updateFields).length === 0) throw "Error: no fields provided to update"
+
+    updateFields.updatedAt = new Date()
+
+    const planCollection = await plans()
+    const result = planCollection.updateOne(
+      { _id: new ObjectId(planId) },
+      { $set: updateFields }
+    )
+
+    if (result.modifiedCount === 0) throw "Error: could not update plan"
+    return await this.getPlanById(planId)
+  },
+
+  async updateActivity(planId, locationId, { startTime, endTime, notes } = {}) {
+    planId = checkId(planId)
+    locationId = checkId(locationId)
+
+    const updateFields = {}
+
+    if (startTime != undefined) updateFields.startTime = checkTime(startTime)
+    if (endTime != undefined) updateFields.endTime = checkTime(endTime)
+    if (notes != undefined) {
+      if (typeof notes != 'string') throw "Error: notes must be of type string"
+      updateFields.notes = notes
+    }
+
+    if (Object.keys(updateFields).length === 0) throw "Error: no fields provided to update"
+
+    const planCollection = await plans()
+    const result = await planCollection.updateOne(
+      { _id: new ObjectId(planId), "activities.locationId": new ObjectId(locationId) },
+      {
+        $set: {
+          ...(updateFields.startTime && { "activities.$.startTime": updateFields.startTime }),
+          ...(updateFields.endTime && { "activities.$.endTime": updateFields.endTime }),
+          ...(updateFields.notes && { "activities.$.notes": updateFields.notes }),
+          updatedAt: new Date()
+        }
+      }
+    )
+
+    if (result.modifiedCount === 0) throw "Error: could not update plan"
+    return await this.getPlanById(planId)
+  }
 }

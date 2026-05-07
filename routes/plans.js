@@ -21,7 +21,7 @@ router.route('/all/:planId') // plan specific page
   .get(async (req, res) => { // DONE
     // this will retrieve a plan specified by the user on the frontend 
   })
-  .put('/all/:planId', async (req, res) => {
+  .put('/all/:planId', async (req, res) => { // DONE
     // update the time, change date, etc. of a pre-existing plan
   })
   .delete('/all/:planId', async (req, res) => {
@@ -37,8 +37,8 @@ router.route('/all/:planId/activities')
   })
 
 router.route('all/:planId/activities/:activityId')
-  .put((req, res) => {
-    // update a plan and its parameters
+  .put((req, res) => { // DONE
+    // update a activity and its parameters
   })
   .delete((req, res) => {
     // delete a specific activity
