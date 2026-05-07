@@ -1,0 +1,71 @@
+<section class="add-location">
+  <h1>Suggest a Location</h1>
+  <p class="muted">Submitted locations are reviewed by an admin before going live. Admin-submitted locations go live immediately.</p>
+
+  {{#if error}}<p class="error">{{error}}</p>{{/if}}
+  {{#if success}}<p class="success">{{success}}</p>{{/if}}
+
+  <form method="POST" action="/explore" class="add-location-form" novalidate>
+    <label>
+      Name *
+      <input type="text" name="name" required maxlength="100" value="{{name}}" />
+    </label>
+
+    <label>
+      Type *
+      <select name="type" required>
+        <option value="">Select...</option>
+        {{#each types}}
+          <option value="{{this}}"{{#if (eq this ../type)}} selected{{/if}}>{{this}}</option>
+        {{/each}}
+      </select>
+    </label>
+
+    <label>
+      Address
+      <input type="text" name="address" maxlength="200" value="{{address}}" />
+    </label>
+
+    <label>
+      ZIP code
+      <input type="text" name="zipCode" pattern="\d{5}" value="{{zipCode}}" />
+    </label>
+
+    <div class="form-pair">
+      <label>
+        Latitude
+        <input type="text" name="latitude" value="{{latitude}}" placeholder="e.g. 40.7128" />
+      </label>
+      <label>
+        Longitude
+        <input type="text" name="longitude" value="{{longitude}}" placeholder="e.g. -74.0060" />
+      </label>
+    </div>
+
+    <label>
+      Phone
+      <input type="text" name="phone" value="{{phone}}" placeholder="(212) 555-0100" />
+    </label>
+
+    <label>
+      Website (URL)
+      <input type="url" name="website" value="{{website}}" placeholder="https://..." />
+    </label>
+
+    <label>
+      Price category
+      <select name="priceCategory">
+        <option value=""{{#unless priceCategory}} selected{{/unless}}>N/A</option>
+        <option value="1"{{#if (eq priceCategory "1")}} selected{{/if}}>$ (cheap)</option>
+        <option value="2"{{#if (eq priceCategory "2")}} selected{{/if}}>$$</option>
+        <option value="3"{{#if (eq priceCategory "3")}} selected{{/if}}>$$$</option>
+        <option value="4"{{#if (eq priceCategory "4")}} selected{{/if}}>$$$$ (expensive)</option>
+      </select>
+    </label>
+
+    <div class="form-actions">
+      <button type="submit">Submit</button>
+      <a class="btn-cancel" href="/explore">Cancel</a>
+    </div>
+  </form>
+</section>
