@@ -24,8 +24,8 @@ router.route('/all/:planId') // plan specific page
   .put('/all/:planId', async (req, res) => { // DONE
     // update the time, change date, etc. of a pre-existing plan
   })
-  .delete('/all/:planId', async (req, res) => {
-    // delete a plan
+  .delete('/all/:planId', async (req, res) => { // DONE
+    // delete a plan 
   })
 
 router.route('/all/:planId/activities')
@@ -40,7 +40,7 @@ router.route('all/:planId/activities/:activityId')
   .put((req, res) => { // DONE
     // update a activity and its parameters
   })
-  .delete((req, res) => {
+  .delete((req, res) => { // DONE
     // delete a specific activity
   })
 

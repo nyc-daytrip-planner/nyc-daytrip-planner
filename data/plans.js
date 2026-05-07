@@ -119,6 +119,7 @@ const exportedMethods = {
   },
 
   async updatePlan(planId, { title, date, status, isPublic } = {}) {
+    // PUT
     planId = checkId(planId)
 
     const updateFields = {}
@@ -141,7 +142,7 @@ const exportedMethods = {
     updateFields.updatedAt = new Date()
 
     const planCollection = await plans()
-    const result = planCollection.updateOne(
+    const result = await planCollection.updateOne(
       { _id: new ObjectId(planId) },
       { $set: updateFields }
     )
@@ -151,6 +152,7 @@ const exportedMethods = {
   },
 
   async updateActivity(planId, locationId, { startTime, endTime, notes } = {}) {
+    // PUT
     planId = checkId(planId)
     locationId = checkId(locationId)
 
@@ -179,6 +181,36 @@ const exportedMethods = {
     )
 
     if (result.modifiedCount === 0) throw "Error: could not update plan"
+    return await this.getPlanById(planId)
+  },
+
+  async deletePlan(planId) {
+    // DELETE
+    planId = checkId(planId)
+    const planCollection = await plans()
+    const deletedPlan = await planCollection.findOneAndDelete({
+      _id: new ObjectId(planId)
+    })
+    if (!deletedPlan) throw "Error: Plan not found or could not be deleted"
+
+    return { ...deletedPlan, deleted: true }
+  },
+
+  async deleteActivity(planId, locationId) {
+    // DELETE
+    planId = checkId(planId)
+    locationId = checkId(locationId)
+
+    const planCollection = await plans()
+    const result = await planCollection.updateOne(
+      { _id: new ObjectId(planId) },
+      {
+        $pull: { activities: { locationId: new ObjectId(locationId) } },
+        $set: { updatedAt: new Date() }
+      }
+    )
+
+    if (result.modifiedCount === 0) throw "Error: could not delete activity"
     return await this.getPlanById(planId)
   }
 }
