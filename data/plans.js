@@ -17,24 +17,24 @@ const exportedMethods = {
     return await planCollection.find({ userId }).toArray()
   },
 
-  async getPlanById(plan_id) {
+  async getPlanById(planId) {
     // GET
-    plan_id = checkId(plan_id)
+    planId = checkId(planId)
     const planCollection = await plans()
-    const plan = await planCollection.findOne({ _id: new ObjectId(plan_id) })
+    const plan = await planCollection.findOne({ _id: new ObjectId(planId) })
 
-    if (!plan) throw "Error: Plan not found"
+    if (!plan) throw { status: 404, message: "Plan not found" }
 
     return plan
   },
 
-  async getPlanActivities(plan_id) {
+  async getPlanActivities(planId) {
     // GET
-    plan_id = checkId(plan_id)
+    planId = checkId(planId)
     const planCollection = await plans()
-    const plan = await planCollection.findOne({ _id: new ObjectId(plan_id) })
+    const plan = await planCollection.findOne({ _id: new ObjectId(planId) })
 
-    if (!plan) throw "Error: Plan not found"
+    if (!plan) throw { status: 404, message: "Plan not found" }
 
     return plan.activities
   },
@@ -44,9 +44,9 @@ const exportedMethods = {
     userId = checkId(userId)
     date = checkDate(date)
     const planCollection = await plans()
-    const plan = await planCollection.findOne({ userId, date })
+    const plan = await planCollection.findOne({ userId: new Object(userId), date })
 
-    if (!plan) throw "Error: Plan not found"
+    if (!plan) throw { status: 404, message: "Plan not found" }
 
     return plan
   },
@@ -57,7 +57,7 @@ const exportedMethods = {
     title = checkString(title)
     date = checkDate(date)
 
-    if (typeof isPublic != 'boolean') throw "Error: must be boolean"
+    if (typeof isPublic != 'boolean') throw { status: 400, message: "Error: must be boolean" }
 
     let activities = []
 
@@ -95,7 +95,7 @@ const exportedMethods = {
     startTime = checkTime(startTime)
     endTime = checkTime(endTime)
 
-    if (typeof notes != 'string') throw "Error: notes must be of type string"
+    if (typeof notes != 'string') throw { status: 400, message: "Error: notes must of type string" }
 
     const newActivity = {
       locationId: new ObjectId(locationId),
@@ -113,7 +113,7 @@ const exportedMethods = {
       }
     )
 
-    if (result.modifiedCount === 0) throw "Error: could not add activity"
+    if (result.modifiedCount === 0) throw { status: 500, message: "Error: could not add activity" }
 
     return await this.getPlanById(planId)
   },
@@ -128,16 +128,16 @@ const exportedMethods = {
     if (date != undefined) updateFields.date = checkDate(date)
     if (status !== undefined) {
       if (!['active', 'saved', 'completed'].includes(status))
-        throw "Error: invalid status"
+        throw { status: 400, message: "Error: invalid status" }
       updateFields.status = status
     }
 
     if (isPublic != undefined) {
-      if (typeof isPublic != 'boolean') throw "Error: must be boolean"
+      if (typeof isPublic != 'boolean') throw { status: 400, message: "Error: must be boolean" }
       updateFields.isPublic = isPublic
     }
 
-    if (Object.keys(updateFields).length === 0) throw "Error: no fields provided to update"
+    if (Object.keys(updateFields).length === 0) throw { status: 400, message: "Error: no fields provided to update" }
 
     updateFields.updatedAt = new Date()
 
@@ -147,7 +147,7 @@ const exportedMethods = {
       { $set: updateFields }
     )
 
-    if (result.modifiedCount === 0) throw "Error: could not update plan"
+    if (result.modifiedCount === 0) throw { status: 500, message: "Error: could not update plan" }
     return await this.getPlanById(planId)
   },
 
@@ -161,26 +161,24 @@ const exportedMethods = {
     if (startTime != undefined) updateFields.startTime = checkTime(startTime)
     if (endTime != undefined) updateFields.endTime = checkTime(endTime)
     if (notes != undefined) {
-      if (typeof notes != 'string') throw "Error: notes must be of type string"
+      if (typeof notes != 'string') throw { status: 400, message: "Error: notes must of type string" }
       updateFields.notes = notes
     }
 
-    if (Object.keys(updateFields).length === 0) throw "Error: no fields provided to update"
+    if (Object.keys(updateFields).length === 0) throw { status: 400, message: "Error: no fields provided to update" }
+
+    const setFields = { updatedAt: new Date() }
+    if ('startTime' in updateFields) setFields["activities.$.startTime"] = updateFields.startTime
+    if ('endTime' in updateFields) setFields["activities.$.endTime"] = updateFields.endTime
+    if ('notes' in updateFields) setFields["activities.$.notes"] = updateFields.notes
 
     const planCollection = await plans()
     const result = await planCollection.updateOne(
       { _id: new ObjectId(planId), "activities.locationId": new ObjectId(locationId) },
-      {
-        $set: {
-          ...(updateFields.startTime && { "activities.$.startTime": updateFields.startTime }),
-          ...(updateFields.endTime && { "activities.$.endTime": updateFields.endTime }),
-          ...(updateFields.notes && { "activities.$.notes": updateFields.notes }),
-          updatedAt: new Date()
-        }
-      }
+      { $set: setFields }
     )
 
-    if (result.modifiedCount === 0) throw "Error: could not update plan"
+    if (result.modifiedCount === 0) throw { status: 500, message: "Error: could not update plan" }
     return await this.getPlanById(planId)
   },
 
@@ -191,7 +189,7 @@ const exportedMethods = {
     const deletedPlan = await planCollection.findOneAndDelete({
       _id: new ObjectId(planId)
     })
-    if (!deletedPlan) throw "Error: Plan not found or could not be deleted"
+    if (!deletedPlan) throw { status: 404, message: "Plan not found" }
 
     return { ...deletedPlan, deleted: true }
   },
@@ -210,7 +208,9 @@ const exportedMethods = {
       }
     )
 
-    if (result.modifiedCount === 0) throw "Error: could not delete activity"
+    if (result.modifiedCount === 0) throw { status: 500, message: "Error: could not delete activity" }
     return await this.getPlanById(planId)
   }
 }
+
+export default exportedMethods
