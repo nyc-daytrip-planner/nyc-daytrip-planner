@@ -1,0 +1,22 @@
+<li class="location-card">
+  <a href="/explore/{{location._id}}" class="location-card-link">
+    <h3 class="location-card-name">{{location.name}}</h3>
+    <p class="location-card-meta">
+      <span class="location-type">{{location.type}}</span>
+      {{#if location.priceLabel}}
+        <span class="location-price">{{location.priceLabel}}</span>
+      {{/if}}
+    </p>
+    {{#if location.address}}
+      <p class="location-card-address">{{location.address}}</p>
+    {{/if}}
+    <p class="location-card-rating">
+      {{#if location.averageRating}}
+        &#9733; {{location.averageRating}} / 5
+        <span class="muted">({{location.totalReviews}} review{{#unless (eq location.totalReviews 1)}}s{{/unless}})</span>
+      {{else}}
+        <span class="muted">No reviews yet</span>
+      {{/if}}
+    </p>
+  </a>
+</li>
