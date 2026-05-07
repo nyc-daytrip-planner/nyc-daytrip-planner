@@ -14,10 +14,6 @@ import {
 import { getReviewsForLocation } from '../data/reviews.js';
 import { getCommentsForLocation } from '../data/comments.js';
 import { requireLogin, requireAdmin } from '../middleware/auth.js';
-// requireLogin/requireAdmin redirect or render HTML on failure — fine for
-// page navigations but not AJAX. The /admin/:id/approve, /admin/:id/reject,
-// and /:id/favorite endpoints below check auth inline and respond with JSON
-// instead, matching the pattern in routes/reviews.js + routes/comments.js.
 import { checkId } from '../helpers.js';
 
 const router = Router();
@@ -32,16 +28,18 @@ function jsonError(res, e) {
   return res.status(status).json({ ok: false, error: e });
 }
 
-function priceLabel(n) {
-  if (!n) return '';
-  return '$'.repeat(n);
+function requireAdminJson(req, res) {
+  if (!req.session.user) {
+    res.status(401).json({ ok: false, error: 'You must be logged in' });
+    return false;
+  }
+  if (req.session.user.role !== 'admin') {
+    res.status(403).json({ ok: false, error: 'Admin only' });
+    return false;
+  }
+  return true;
 }
 
-function decorateForCard(loc) {
-  return { ...loc, priceLabel: priceLabel(loc.priceCategory) };
-}
-
-// GET /explore — browse list with filters
 router.get('/', async function(req, res) {
   const filters = {};
   if (req.query.type) filters.type = xss(String(req.query.type));
@@ -50,41 +48,33 @@ router.get('/', async function(req, res) {
   if (req.query.search) filters.search = xss(String(req.query.search));
   if (req.query.sort) filters.sort = xss(String(req.query.sort));
 
+  const vm = {
+    title: 'Explore',
+    types: ALLOWED_TYPES,
+    activeType: filters.type || '',
+    activePrice: filters.priceCategory || '',
+    activeMinRating: filters.minRating || '',
+    activeSearch: filters.search || '',
+    activeSort: filters.sort || 'name'
+  };
+
   try {
-    const list = (await browseLocations(filters)).map(decorateForCard);
-    return res.render('explore', {
-      title: 'Explore',
-      locations: list,
-      types: ALLOWED_TYPES,
-      activeType: filters.type || '',
-      activePrice: filters.priceCategory || '',
-      activeMinRating: filters.minRating || '',
-      activeSearch: filters.search || '',
-      activeSort: filters.sort || 'name',
-      empty: list.length === 0
-    });
+    const list = await browseLocations(filters);
+    return res.render('explore', { ...vm, locations: list, empty: list.length === 0 });
   } catch (e) {
     return res.status(400).render('explore', {
-      title: 'Explore',
-      error: typeof e === 'string' ? e : 'Server error',
+      ...vm,
       locations: [],
-      types: ALLOWED_TYPES,
-      activeType: filters.type || '',
-      activePrice: filters.priceCategory || '',
-      activeMinRating: filters.minRating || '',
-      activeSearch: filters.search || '',
-      activeSort: filters.sort || 'name',
-      empty: true
+      empty: true,
+      error: typeof e === 'string' ? e : 'Server error'
     });
   }
 });
 
-// GET /explore/add — submit-a-location form
 router.get('/add', requireLogin, async function(req, res) {
   res.render('addLocation', { title: 'Suggest a Location', types: ALLOWED_TYPES });
 });
 
-// POST /explore — create a new location (user submission or admin add)
 router.post('/', requireLogin, async function(req, res) {
   const body = req.body || {};
   const input = {
@@ -98,36 +88,28 @@ router.post('/', requireLogin, async function(req, res) {
     website: xss(body.website || ''),
     priceCategory: xss(String(body.priceCategory ?? ''))
   };
+  const vm = { title: 'Suggest a Location', types: ALLOWED_TYPES };
 
   try {
-    const isAdmin = req.session.user.role === 'admin';
-    const created = await createLocation(input, req.session.user._id, isAdmin);
-    if (created.approved) {
-      return res.redirect('/explore/' + created._id);
-    }
+    const created = await createLocation(input, { actor: req.session.user });
+    if (created.approved) return res.redirect('/explore/' + created._id);
     return res.render('addLocation', {
-      title: 'Suggest a Location',
-      types: ALLOWED_TYPES,
+      ...vm,
       success: 'Thanks! Your location was submitted and is awaiting admin approval.'
     });
   } catch (e) {
     return res.status(400).render('addLocation', {
-      title: 'Suggest a Location',
-      types: ALLOWED_TYPES,
-      error: typeof e === 'string' ? e : 'Could not create location',
-      ...input
+      ...vm,
+      ...input,
+      error: typeof e === 'string' ? e : 'Could not create location'
     });
   }
 });
 
-// GET /explore/admin/pending — admin-only pending approvals page
 router.get('/admin/pending', requireAdmin, async function(req, res) {
   try {
     const pending = await getPendingLocations();
-    return res.render('adminLocationsHost', {
-      title: 'Pending Locations',
-      pending
-    });
+    return res.render('adminLocationsHost', { title: 'Pending Locations', pending });
   } catch (e) {
     return res.status(500).render('error', {
       title: 'Server Error',
@@ -136,19 +118,6 @@ router.get('/admin/pending', requireAdmin, async function(req, res) {
   }
 });
 
-function requireAdminJson(req, res) {
-  if (!req.session.user) {
-    res.status(401).json({ ok: false, error: 'You must be logged in' });
-    return false;
-  }
-  if (req.session.user.role !== 'admin') {
-    res.status(403).json({ ok: false, error: 'Admin only' });
-    return false;
-  }
-  return true;
-}
-
-// POST /explore/admin/:id/approve — approve pending location
 router.post('/admin/:id/approve', async function(req, res) {
   if (!requireAdminJson(req, res)) return;
   try {
@@ -159,7 +128,6 @@ router.post('/admin/:id/approve', async function(req, res) {
   }
 });
 
-// POST /explore/admin/:id/reject — reject (delete) pending location
 router.post('/admin/:id/reject', async function(req, res) {
   if (!requireAdminJson(req, res)) return;
   try {
@@ -170,7 +138,6 @@ router.post('/admin/:id/reject', async function(req, res) {
   }
 });
 
-// POST /explore/:id/favorite — toggle favorite (login required)
 router.post('/:id/favorite', async function(req, res) {
   if (!req.session.user) {
     return res.status(401).json({ ok: false, error: 'You must be logged in' });
@@ -183,7 +150,6 @@ router.post('/:id/favorite', async function(req, res) {
   }
 });
 
-// GET /explore/:id — location detail page (with reviews + comments)
 router.get('/:id', async function(req, res) {
   let locationId;
   try {
@@ -196,19 +162,19 @@ router.get('/:id', async function(req, res) {
   }
 
   try {
-    const isAdmin = !!(req.session.user && req.session.user.role === 'admin');
+    const sessionUser = req.session.user;
+    const isAdmin = !!(sessionUser && sessionUser.role === 'admin');
     const location = await getLocationById(locationId, { requireApproved: !isAdmin });
-    location.priceLabel = priceLabel(location.priceCategory);
 
-    const reviewsList = await getReviewsForLocation(locationId);
-    const commentsList = await getCommentsForLocation(locationId);
-    const userReview = req.session.user
-      ? reviewsList.find((r) => r.userId === req.session.user._id) || null
+    const [reviewsList, commentsList, isFavorited] = await Promise.all([
+      getReviewsForLocation(locationId),
+      getCommentsForLocation(locationId),
+      sessionUser ? isFavoritedByUser(sessionUser._id, locationId) : Promise.resolve(false)
+    ]);
+
+    const userReview = sessionUser
+      ? reviewsList.find((r) => r.userId === sessionUser._id) || null
       : null;
-    let isFavorited = false;
-    if (req.session.user) {
-      isFavorited = await isFavoritedByUser(req.session.user._id, locationId);
-    }
 
     return res.render('locationDetail', {
       title: location.name,
@@ -221,10 +187,7 @@ router.get('/:id', async function(req, res) {
     });
   } catch (e) {
     if (typeof e === 'string' && /no location found/i.test(e)) {
-      return res.status(404).render('error', {
-        title: 'Not Found',
-        error: 'Location not found'
-      });
+      return res.status(404).render('error', { title: 'Not Found', error: 'Location not found' });
     }
     return res.status(500).render('error', {
       title: 'Server Error',

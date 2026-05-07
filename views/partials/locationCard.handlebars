@@ -3,8 +3,8 @@
     <h3 class="location-card-name">{{location.name}}</h3>
     <p class="location-card-meta">
       <span class="location-type">{{location.type}}</span>
-      {{#if location.priceLabel}}
-        <span class="location-price">{{location.priceLabel}}</span>
+      {{#if location.priceCategory}}
+        <span class="location-price">{{priceLabel location.priceCategory}}</span>
       {{/if}}
     </p>
     {{#if location.address}}

@@ -1,16 +1,33 @@
-// AJAX approve/reject handlers for the pending locations admin table.
 (function() {
   const table = document.querySelector('.admin-pending-locations table');
   if (!table) return;
 
   function refreshEmptyMessage() {
-    if (table.querySelectorAll('tbody tr').length === 0) {
-      const section = table.closest('.admin-pending-locations');
-      table.remove();
-      const empty = document.createElement('p');
-      empty.className = 'admin-empty';
-      empty.textContent = 'No pending locations.';
-      section.appendChild(empty);
+    if (table.querySelectorAll('tbody tr').length > 0) return;
+    const section = table.closest('.admin-pending-locations');
+    table.remove();
+    const empty = document.createElement('p');
+    empty.className = 'admin-empty';
+    empty.textContent = 'No pending locations.';
+    section.appendChild(empty);
+  }
+
+  async function postAction(id, action, confirmMsg, errVerb) {
+    if (!window.confirm(confirmMsg)) return false;
+    try {
+      const resp = await fetch('/explore/admin/' + encodeURIComponent(id) + '/' + action, {
+        method: 'POST',
+        headers: { 'Accept': 'application/json' }
+      });
+      const data = await resp.json();
+      if (!resp.ok || !data.ok) {
+        window.alert(data.error || 'Could not ' + errVerb);
+        return false;
+      }
+      return true;
+    } catch (err) {
+      window.alert('Network error. Please try again.');
+      return false;
     }
   }
 
@@ -19,39 +36,19 @@
     if (!(target instanceof HTMLElement)) return;
     const tr = target.closest('tr[data-location-id]');
     if (!tr) return;
-    const id = tr.dataset.locationId;
 
+    let outcome = false;
     if (target.classList.contains('admin-approve-btn')) {
-      if (!window.confirm('Approve this location?')) return;
-      try {
-        const resp = await fetch('/explore/admin/' + encodeURIComponent(id) + '/approve', {
-          method: 'POST',
-          headers: { 'Accept': 'application/json' }
-        });
-        const data = await resp.json();
-        if (!resp.ok || !data.ok) return window.alert(data.error || 'Could not approve');
-        tr.remove();
-        refreshEmptyMessage();
-      } catch (err) {
-        window.alert('Network error. Please try again.');
-      }
+      outcome = await postAction(tr.dataset.locationId, 'approve', 'Approve this location?', 'approve');
+    } else if (target.classList.contains('admin-reject-btn')) {
+      outcome = await postAction(tr.dataset.locationId, 'reject', 'Reject and delete this location?', 'reject');
+    } else {
       return;
     }
 
-    if (target.classList.contains('admin-reject-btn')) {
-      if (!window.confirm('Reject and delete this location?')) return;
-      try {
-        const resp = await fetch('/explore/admin/' + encodeURIComponent(id) + '/reject', {
-          method: 'POST',
-          headers: { 'Accept': 'application/json' }
-        });
-        const data = await resp.json();
-        if (!resp.ok || !data.ok) return window.alert(data.error || 'Could not reject');
-        tr.remove();
-        refreshEmptyMessage();
-      } catch (err) {
-        window.alert('Network error. Please try again.');
-      }
+    if (outcome) {
+      tr.remove();
+      refreshEmptyMessage();
     }
   });
 })();

@@ -1,4 +1,3 @@
-// AJAX favorite toggle on the location detail page.
 (function() {
   const detail = document.querySelector('.location-detail');
   if (!detail) return;

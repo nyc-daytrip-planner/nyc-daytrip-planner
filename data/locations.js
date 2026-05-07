@@ -96,10 +96,10 @@ function serializeLocation(loc) {
   return out;
 }
 
-// addedByUserId=null → dataset-seeded (auto-approved).
-// addedByUserId set + isAdmin=true → admin-added (auto-approved).
-// addedByUserId set + isAdmin=false → user-suggested (awaits admin approval).
-export async function createLocation(input, addedByUserId = null, isAdmin = false) {
+// actor=null → dataset-seeded (auto-approved).
+// actor.role==='admin' → admin-added (auto-approved).
+// otherwise → user-suggested (awaits admin approval).
+export async function createLocation(input, { actor = null } = {}) {
   if (!input) throw 'Must provide location data';
 
   const name = checkString(input.name);
@@ -114,12 +114,8 @@ export async function createLocation(input, addedByUserId = null, isAdmin = fals
   const website = checkWebsite(input.website);
   const priceCategory = checkPriceCategory(input.priceCategory);
 
-  let addedBy = null;
-  let approved = true;
-  if (addedByUserId) {
-    addedBy = new ObjectId(checkId(addedByUserId));
-    approved = isAdmin === true;
-  }
+  const addedBy = actor ? new ObjectId(checkId(actor._id)) : null;
+  const approved = !actor || actor.role === 'admin';
 
   const newLocation = {
     name,
@@ -215,20 +211,18 @@ export async function getPendingLocations() {
     ...new Set(pending.filter((p) => p.addedBy).map((p) => p.addedBy.toString()))
   ].map((id) => new ObjectId(id));
 
-  let submittersById = new Map();
+  let emailById = new Map();
   if (submitterIds.length > 0) {
     const submitters = await usersCol
       .find({ _id: { $in: submitterIds } })
-      .project({ email: 1, firstName: 1 })
+      .project({ email: 1 })
       .toArray();
-    submittersById = new Map(submitters.map((u) => [u._id.toString(), u]));
+    emailById = new Map(submitters.map((u) => [u._id.toString(), u.email]));
   }
 
   return pending.map((p) => {
     const out = serializeLocation(p);
-    const submitter = p.addedBy ? submittersById.get(p.addedBy.toString()) : null;
-    out.submitterEmail = submitter ? submitter.email : '(unknown)';
-    out.submitterFirstName = submitter ? submitter.firstName : '(unknown)';
+    out.submitterEmail = (p.addedBy && emailById.get(p.addedBy.toString())) || '(unknown)';
     out.createdAtDisplay = p.createdAt.toISOString().slice(0, 16).replace('T', ' ');
     return out;
   });
@@ -253,48 +247,35 @@ export async function rejectLocation(locationId) {
   locationId = checkId(locationId);
 
   const locationsCol = await locations();
-  const existing = await locationsCol.findOne({ _id: new ObjectId(locationId) });
-  if (!existing) throw 'No location found with that id';
-  if (existing.approved) throw 'Cannot reject an already-approved location';
+  const oid = new ObjectId(locationId);
+  const deleted = await locationsCol.findOneAndDelete({ _id: oid, approved: false });
+  if (deleted) return { rejected: true, locationId };
 
-  const result = await locationsCol.deleteOne({ _id: new ObjectId(locationId) });
-  if (result.deletedCount !== 1) throw 'Could not reject location';
-  return { rejected: true, locationId };
+  // findOneAndDelete didn't match — disambiguate: missing vs already-approved.
+  const exists = await locationsCol.findOne({ _id: oid }, { projection: { _id: 1 } });
+  if (!exists) throw 'No location found with that id';
+  throw 'Cannot reject an already-approved location';
 }
 
-// Toggles a location in the user's favoriteLocations.
-// Returns { favorited: boolean } describing the post-action state.
+// $pull and $addToSet are idempotent — try the remove first; if it didn't
+// modify anything, the favorite wasn't there, so add it. One round-trip on
+// unfavorite, two on favorite, and no read-then-write race.
 export async function toggleFavoriteLocation(userId, locationId) {
-  userId = checkId(userId);
-  locationId = checkId(locationId);
-
-  const locationsCol = await locations();
-  const location = await locationsCol.findOne({ _id: new ObjectId(locationId) });
-  if (location === null) throw 'No location found with that id';
-  if (!location.approved) throw 'Cannot favorite a pending location';
+  const userOid = new ObjectId(checkId(userId));
+  const locOid = new ObjectId(checkId(locationId));
 
   const usersCol = await users();
-  const user = await usersCol.findOne({ _id: new ObjectId(userId) });
-  if (user === null) throw 'No user found with that id';
-
-  const has = (user.favoriteLocations || []).some(
-    (id) => id.toString() === locationId
+  const pullRes = await usersCol.updateOne(
+    { _id: userOid, favoriteLocations: locOid },
+    { $pull: { favoriteLocations: locOid } }
   );
+  if (pullRes.modifiedCount === 1) return { favorited: false };
 
-  if (has) {
-    const r = await usersCol.updateOne(
-      { _id: new ObjectId(userId) },
-      { $pull: { favoriteLocations: new ObjectId(locationId) } }
-    );
-    if (!r.acknowledged) throw 'Could not unfavorite location';
-    return { favorited: false };
-  }
-
-  const r = await usersCol.updateOne(
-    { _id: new ObjectId(userId) },
-    { $addToSet: { favoriteLocations: new ObjectId(locationId) } }
+  const addRes = await usersCol.updateOne(
+    { _id: userOid },
+    { $addToSet: { favoriteLocations: locOid } }
   );
-  if (!r.acknowledged) throw 'Could not favorite location';
+  if (addRes.matchedCount === 0) throw 'No user found with that id';
   return { favorited: true };
 }
 
