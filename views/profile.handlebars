@@ -9,4 +9,18 @@
     <p>Email: {{email}}</p>
     <p>Member Since: {{createdAt}}</p>
   </div>
+
+  <div class="profile-card">
+    <h2>Friends List</h2>
+
+    {{#if friends.length}}
+      <ul>
+        {{#each friends}}
+          <li>{{this}}</li>
+        {{/each}}
+      </ul>
+    {{else}}
+      <p>You have no friends added yet.</p>
+    {{/if}}
+  </div>
 </section>
