@@ -4,33 +4,35 @@ import planData from '../data/plans.js'
 
 router.route('/') // main page
   .get(async (req, res) => {
+    const date = req.query.date || new Date().toISOString().split('T')[0]
     try {
       const userId = req.session.user._id
-      const date = req.query.date || new Date().toISOString().split('T')[0]
-
-      const plans = await planData.getPlanByDate(userId, date)
-      res.render('planner', { title: 'Planner', plans, date })
+      const plan = await planData.getPlanByDate(userId, date)
+      res.render('planner', { title: 'Planner', plan, date })
     } catch (e) {
-      // if no plan found for that date just render empty calendar
-      res.render('planner', {
-        title: 'Planner',
-        plans: [],
-        date: new Date().toISOString().split('T')[0]
-      })
+      // no plan found for that date — render empty planner
+      res.render('planner', { title: 'Planner', plan: null, date })
     }
   })
   .post(async (req, res) => { // DONE
-    // this will give the user the ability to create a new plan 
+    // this will give the user the ability to create a new plan
+    const fallbackDate = req.body?.date || new Date().toISOString().split('T')[0]
     try {
       const userId = req.session.user._id
 
       if (!req.body) return res.status(400).render('error', { error: 'No data provided' })
-      const { title, date, isPublic, locations } = req.body
+      const { title, date, locations } = req.body
+      const isPublic = req.body.isPublic === 'true' || req.body.isPublic === true
 
       const plan = await planData.newPlan(userId, title, date, isPublic, locations)
-      res.redirect(`/plans/${plan._id}`)
+      res.redirect(`/plans?date=${plan.date}`)
     } catch (e) {
-      res.status(e.status || 500).render('error', { error: e.message || e })
+      res.status(e.status || 400).render('planner', {
+        title: 'Planner',
+        plan: null,
+        date: fallbackDate,
+        error: e.message || e
+      })
     }
   });
 
@@ -41,6 +43,22 @@ router.get('/all', async (req, res) => { // DONE
     const plans = await planData.getAllPlans(userId)
 
     res.render('plans', { title: 'My Plans', plans })
+  } catch (e) {
+    res.status(e.status || 500).render('error', { error: e.message || e })
+  }
+})
+
+router.post('/activities', async (req, res) => {
+  try {
+    const userId = req.session.user._id
+    const { planId, locationId, startTime, endTime, notes } = req.body
+
+    const plan = await planData.getPlanById(planId)
+    if (plan.userId.toString() !== userId)
+      return res.status(403).render('error', { error: 'Unauthorized' })
+
+    await planData.addActivity(planId, locationId, startTime, endTime, notes)
+    res.redirect(`/plans/${planId}`)
   } catch (e) {
     res.status(e.status || 500).render('error', { error: e.message || e })
   }
@@ -118,13 +136,13 @@ router.route('/:planId/activities')
     try {
       const userId = req.session.user._id
       const planId = req.params.planId
-      const { startTime, endTime, notes } = req.body
+      const { locationId, startTime, endTime, notes } = req.body
 
       const plan = await planData.getPlanById(planId)
       if (plan.userId.toString() !== userId)
         return res.status(403).render('error', { error: 'Unauthorized' })
 
-      await planData.addActivity(planId, startTime, endTime, notes)
+      await planData.addActivity(planId, locationId, startTime, endTime, notes)
       res.redirect(`/plans/${planId}`)
     } catch (e) {
       res.status(e.status || 500).render('error', { error: e.message || e })

@@ -1,24 +1,61 @@
-<h1>Planner</h1>
-<p>Date: {{date}}</p>
+<section class="planner-page">
+  <header class="planner-header">
+    <h1>Planner</h1>
+    <form class="planner-date-picker" method="GET" action="/plans">
+      <label>
+        Date
+        <input type="date" name="date" value="{{date}}" />
+      </label>
+      <button type="submit">Go</button>
+    </form>
+  </header>
 
-{{#if plans}}
-<p>{{plans.title}}</p>
-<a href="/plans/{{plans._id}}">View Plan</a>
-<a href="/plans/{{plans._id}}/activities">View Activities</a>
+  {{#if error}}
+    <p class="error">{{error}}</p>
+  {{/if}}
 
-<form method="POST" action="/plans/{{plans._id}}?_method=DELETE">
-  <button type="submit">Delete Plan</button>
-</form>
-{{else}}
-<p>No plans for this day</p>
-{{/if}}
+  {{#if plan}}
+    <article class="planner-plan-summary">
+      <h2>{{plan.title}}</h2>
+      <p class="muted">{{plan.date}}</p>
+      <div class="planner-plan-actions">
+        <a class="btn-secondary" href="/plans/{{plan._id}}">Open plan</a>
+        <a class="btn-secondary" href="/plans/{{plan._id}}/activities">View activities</a>
+        <form method="POST" action="/plans/{{plan._id}}?_method=DELETE" class="planner-delete-form">
+          <button type="submit" class="btn-delete">Delete plan</button>
+        </form>
+      </div>
+    </article>
+  {{else}}
+    <section class="planner-empty">
+      <p class="muted">No plan for {{date}} yet. Start one below.</p>
 
-<h2>Create a Plan</h2>
-<form method="POST" action="/plans">
-  <input type="text" name="title" placeholder="Title" />
-  <input type="date" name="date" />
-  <label>
-    <input type="checkbox" name="isPublic" value="true" /> Public
-  </label>
-  <button type="submit">Create Plan</button>
-</form>
+      <form class="planner-create-form" method="POST" action="/plans">
+        <h2>Create a plan</h2>
+
+        <label>
+          Title
+          <input type="text" name="title" placeholder="e.g. Brunch &amp; Central Park" required maxlength="100" />
+        </label>
+
+        <label>
+          Date
+          <input type="date" name="date" value="{{date}}" required />
+        </label>
+
+        <label class="planner-public-toggle">
+          <input type="checkbox" name="isPublic" value="true" />
+          Make this plan public
+        </label>
+
+        <div class="planner-create-actions">
+          <button type="submit">Create plan</button>
+        </div>
+      </form>
+    </section>
+  {{/if}}
+
+  <p class="planner-footer-link">
+    <a href="/plans/all">See all my plans &rarr;</a>
+  </p>
+</section>

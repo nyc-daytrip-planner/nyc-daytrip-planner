@@ -47,7 +47,6 @@ const exportedMethods = {
     const plan = await planCollection.findOne({ userId: new ObjectId(userId), date })
 
     if (!plan) throw { status: 404, message: "Plan not found" }
-
     return plan
   },
 
@@ -62,8 +61,9 @@ const exportedMethods = {
     let activities = []
 
     if (locations.length > 0) {
-      activities = locations.map(({ activityId, startTime, endTime, notes = null }) => ({
+      activities = locations.map(({ locationId, startTime, endTime, notes = null }) => ({
         _id: new ObjectId(),
+        locationId: new ObjectId(locationId),
         startTime: startTime || null,
         endTime: endTime || null,
         notes
@@ -88,9 +88,10 @@ const exportedMethods = {
     return await this.getPlanById(newId.toString())
   },
 
-  async addActivity(planId, startTime, endTime, notes = "") {
+  async addActivity(planId, locationId, startTime, endTime, notes = "") {
     // POST
     planId = checkId(planId)
+    locationId = checkId(locationId)
     startTime = checkTime(startTime)
     endTime = checkTime(endTime)
 
@@ -98,6 +99,7 @@ const exportedMethods = {
 
     const newActivity = {
       _id: new ObjectId(),
+      locationId: new ObjectId(locationId),
       startTime,
       endTime,
       notes
