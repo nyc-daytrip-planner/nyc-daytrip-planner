@@ -62,8 +62,8 @@ const exportedMethods = {
     let activities = []
 
     if (locations.length > 0) {
-      activities = locations.map(({ locationId, startTime, endTime, notes = null }) => ({
-        locationId: new ObjectId(checkId(locationId)),
+      activities = locations.map(({ activityId, startTime, endTime, notes = null }) => ({
+        _id: new ObjectId(),
         startTime: startTime || null,
         endTime: endTime || null,
         notes
@@ -88,17 +88,16 @@ const exportedMethods = {
     return await this.getPlanById(newId.toString())
   },
 
-  async addActivity(planId, locationId, startTime, endTime, notes = "") {
+  async addActivity(planId, startTime, endTime, notes = "") {
     // POST
     planId = checkId(planId)
-    locationId = checkId(locationId)
     startTime = checkTime(startTime)
     endTime = checkTime(endTime)
 
     if (typeof notes != 'string') throw { status: 400, message: "Error: notes must of type string" }
 
     const newActivity = {
-      locationId: new ObjectId(locationId),
+      _id: new ObjectId(),
       startTime,
       endTime,
       notes
@@ -151,10 +150,10 @@ const exportedMethods = {
     return await this.getPlanById(planId)
   },
 
-  async updateActivity(planId, locationId, { startTime, endTime, notes } = {}) {
+  async updateActivity(planId, activityId, { startTime, endTime, notes } = {}) {
     // PUT
     planId = checkId(planId)
-    locationId = checkId(locationId)
+    activityId = checkId(activityId)
 
     const updateFields = {}
 
@@ -174,7 +173,7 @@ const exportedMethods = {
 
     const planCollection = await plans()
     const result = await planCollection.updateOne(
-      { _id: new ObjectId(planId), "activities.locationId": new ObjectId(locationId) },
+      { _id: new ObjectId(planId), "activities._id": new ObjectId(activityId) },
       { $set: setFields }
     )
 
@@ -194,16 +193,16 @@ const exportedMethods = {
     return { ...deletedPlan, deleted: true }
   },
 
-  async deleteActivity(planId, locationId) {
+  async deleteActivity(planId, activityId) {
     // DELETE
     planId = checkId(planId)
-    locationId = checkId(locationId)
+    activityId = checkId(activityId)
 
     const planCollection = await plans()
     const result = await planCollection.updateOne(
       { _id: new ObjectId(planId) },
       {
-        $pull: { activities: { locationId: new ObjectId(locationId) } },
+        $pull: { activities: { _id: new ObjectId(activityId) } },
         $set: { updatedAt: new Date() }
       }
     )

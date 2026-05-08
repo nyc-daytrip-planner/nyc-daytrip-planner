@@ -1,0 +1,57 @@
+<h1>My Plans</h1>
+
+{{#if plans}}
+{{#each plans}}
+<p>{{this.title}}</p>
+<a href="/plans/{{this._id}}">View Plan</a>
+{{/each}}
+{{else}}
+<p>No plans found</p>
+{{/if}}
+
+
+<h1>{{title}}</h1>
+
+{{!-- All plans view --}}
+{{#if plans}}
+{{#each plans}}
+<p>{{this.title}} - {{this.date}}</p>
+<a href="/plans/{{this._id}}">View Plan</a>
+{{/each}}
+{{else}}
+<p>No plans found</p>
+{{/if}}
+
+{{!-- Single plan view --}}
+{{#if plan}}
+<p>{{plan.title}} - {{plan.date}}</p>
+
+<form method="POST" action="/plans/{{plan._id}}?_method=PUT">
+  <input type="text" name="title" value="{{plan.title}}" />
+  <button type="submit">Update</button>
+</form>
+
+<form method="POST" action="/plans/{{plan._id}}?_method=DELETE">
+  <button type="submit">Delete</button>
+</form>
+
+<h2>Add Activity</h2>
+<form method="POST" action="/plans/{{plan._id}}/activities">
+  <input type="text" name="startTime" placeholder="10:00 AM" />
+  <input type="text" name="endTime" placeholder="12:00 PM" />
+  <input type="text" name="notes" placeholder="Notes" />
+  <button type="submit">Add Activity</button>
+</form>
+
+<h2>Activities</h2>
+{{#if plan.activities}}
+{{#each plan.activities}}
+<p>{{this.startTime}} - {{this.endTime}}: {{this.notes}}</p>
+<form method="POST" action="/plans/{{../plan._id}}/activities/{{this._id}}?_method=DELETE">
+  <button type="submit">Delete Activity</button>
+</form>
+{{/each}}
+{{else}}
+<p>No activities yet</p>
+{{/if}}
+{{/if}}

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 const router = Router();
-import { planData } from '../data/plans.js'
+import planData from '../data/plans.js'
 
 router.route('/') // main page
   .get(async (req, res) => {
@@ -118,32 +118,32 @@ router.route('/:planId/activities')
     try {
       const userId = req.session.user._id
       const planId = req.params.planId
-      const { locationId, startTime, endTime, notes } = req.body
-
-      const plan = await planData.getPlanById(planId)
-      if (plan.userId.toString() !== userId)
-        return res.status(403).render('error', { error: 'Unauthorized' })
-
-      await planData.addActivity(planId, locationId, startTime, endTime, notes)
-      res.redirect(`/plans/${planId}`)
-    } catch (e) {
-      res.status(e.status || 500).render('error', { error: e.message || e })
-    }
-  })
-
-router.route('/:planId/activities/:locationId')
-  .put(async (req, res) => { // DONE
-    // update a activity and its parameters
-    try {
-      const userId = req.session.user._id
-      const { planId, locationId } = req.params
       const { startTime, endTime, notes } = req.body
 
       const plan = await planData.getPlanById(planId)
       if (plan.userId.toString() !== userId)
         return res.status(403).render('error', { error: 'Unauthorized' })
 
-      await planData.updateActivity(planId, locationId, { startTime, endTime, notes })
+      await planData.addActivity(planId, startTime, endTime, notes)
+      res.redirect(`/plans/${planId}`)
+    } catch (e) {
+      res.status(e.status || 500).render('error', { error: e.message || e })
+    }
+  })
+
+router.route('/:planId/activities/:activityId')
+  .put(async (req, res) => { // DONE
+    // update a activity and its parameters
+    try {
+      const userId = req.session.user._id
+      const { planId, activityId } = req.params
+      const { startTime, endTime, notes } = req.body
+
+      const plan = await planData.getPlanById(planId)
+      if (plan.userId.toString() !== userId)
+        return res.status(403).render('error', { error: 'Unauthorized' })
+
+      await planData.updateActivity(planId, activityId, { startTime, endTime, notes })
       res.redirect(`/plans/${planId}`)
     } catch (e) {
       res.status(e.status || 500).render('error', { error: e.message || e })
@@ -153,13 +153,13 @@ router.route('/:planId/activities/:locationId')
     // delete a specific activity
     try {
       const userId = req.session.user._id
-      const { planId, locationId } = req.params
+      const { planId, activityId } = req.params
 
       const plan = await planData.getPlanById(planId)
       if (plan.userId.toString() !== userId)
         return res.status(403).render('error', { error: 'Unauthorized' })
 
-      await planData.deleteActivity(planId, locationId)
+      await planData.deleteActivity(planId, activityId)
       res.redirect(`/plans/${planId}`)
     } catch (e) {
       res.status(e.status || 500).render('error', { error: e.message || e })

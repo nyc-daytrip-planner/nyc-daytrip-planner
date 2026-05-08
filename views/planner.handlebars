@@ -1,0 +1,24 @@
+<h1>Planner</h1>
+<p>Date: {{date}}</p>
+
+{{#if plans}}
+<p>{{plans.title}}</p>
+<a href="/plans/{{plans._id}}">View Plan</a>
+<a href="/plans/{{plans._id}}/activities">View Activities</a>
+
+<form method="POST" action="/plans/{{plans._id}}?_method=DELETE">
+  <button type="submit">Delete Plan</button>
+</form>
+{{else}}
+<p>No plans for this day</p>
+{{/if}}
+
+<h2>Create a Plan</h2>
+<form method="POST" action="/plans">
+  <input type="text" name="title" placeholder="Title" />
+  <input type="date" name="date" />
+  <label>
+    <input type="checkbox" name="isPublic" value="true" /> Public
+  </label>
+  <button type="submit">Create Plan</button>
+</form>
