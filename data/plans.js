@@ -14,7 +14,7 @@ const exportedMethods = {
     // GET
     userId = checkId(userId)
     const planCollection = await plans()
-    return await planCollection.find({ userId }).toArray()
+    return await planCollection.find({ userId: new ObjectId(userId) }).toArray()
   },
 
   async getPlanById(planId) {
@@ -28,23 +28,23 @@ const exportedMethods = {
     return plan
   },
 
-  async getPlanActivities(planId) {
-    // GET
-    planId = checkId(planId)
-    const planCollection = await plans()
-    const plan = await planCollection.findOne({ _id: new ObjectId(planId) })
+  // async getPlanActivities(planId) {
+  //   // GET
+  //   planId = checkId(planId)
+  //   const planCollection = await plans()
+  //   const plan = await planCollection.findOne({ _id: new ObjectId(planId) })
 
-    if (!plan) throw { status: 404, message: "Plan not found" }
+  //   if (!plan) throw { status: 404, message: "Plan not found" }
 
-    return plan.activities
-  },
+  //   return plan.activities
+  // },
 
   async getPlanByDate(userId, date) {
     // GET
     userId = checkId(userId)
     date = checkDate(date)
     const planCollection = await plans()
-    const plan = await planCollection.findOne({ userId: new Object(userId), date })
+    const plan = await planCollection.findOne({ userId: new ObjectId(userId), date })
 
     if (!plan) throw { status: 404, message: "Plan not found" }
 

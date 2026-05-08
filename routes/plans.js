@@ -1,8 +1,6 @@
 import { Router } from 'express';
 const router = Router();
 import { planData } from '../data/plans.js'
-import { plans } from '../config/mongoCollections.js';
-import { checkId } from '../helpers.js';
 
 router.route('/') // main page
   .get(async (req, res) => {
@@ -53,10 +51,9 @@ router.route('/:planId') // plan specific page
     // this will retrieve a plan specified by the user on the frontend
     try {
       const userId = req.session.user._id
-      const planId = checkId(req.params.planId)
+      const planId = req.params.planId
 
       const plan = await planData.getPlanById(planId)
-
       if (plan.userId.toString() !== userId)
         return res.status(403).render('error', { error: 'Unauthorized' })
 
@@ -69,12 +66,17 @@ router.route('/:planId') // plan specific page
     // update the time, change date, etc. of a pre-existing plan
     try {
       const userId = req.session.user._id
+      const planId = req.params.planId
+
+      const plan = await planData.getPlanById(planId)
+      if (plan.userId.toString() !== userId)
+        return res.status(403).render('error', { error: 'Unauthorized' })
 
       if (!req.body) return res.status(400).render('error', { error: 'No data provided' })
       const { title, date, status, isPublic } = req.body
 
-      const plan = await planData.newPlan(userId, title, date, isPublic, locations)
-      res.redirect(`/plans/${plan._id}`)
+      const updatedPlan = await planData.updatePlan(planId, { title, date, status, isPublic })
+      res.redirect(`/plans/${updatedPlan._id}`)
     } catch (e) {
       res.status(e.status || 500).render('error', { error: e.message || e })
     }
@@ -96,19 +98,72 @@ router.route('/:planId') // plan specific page
   })
 
 router.route('/:planId/activities')
-  .get((req, res) => { // DONE
+  .get(async (req, res) => { // DONE
     // this will retrive all of the activities/locations of a specific plan
+    try {
+      const userId = req.session.user._id
+      const planId = req.params.planId
+
+      const plan = await planData.getPlanById(planId)
+      if (plan.userId.toString() !== userId)
+        return res.status(403).render('error', { error: 'Unauthorized' })
+
+      res.render('activities', { title: 'Plan Activities', activities: plan.activities })  // use plan.activities directly
+    } catch (e) {
+      res.status(e.status || 500).render('error', { error: e.message || e })
+    }
   })
-  .post((req, res) => { // DONE
+  .post(async (req, res) => { // DONE
     // add an activity to a plan
+    try {
+      const userId = req.session.user._id
+      const planId = req.params.planId
+      const { locationId, startTime, endTime, notes } = req.body
+
+      const plan = await planData.getPlanById(planId)
+      if (plan.userId.toString() !== userId)
+        return res.status(403).render('error', { error: 'Unauthorized' })
+
+      await planData.addActivity(planId, locationId, startTime, endTime, notes)
+      res.redirect(`/plans/${planId}`)
+    } catch (e) {
+      res.status(e.status || 500).render('error', { error: e.message || e })
+    }
   })
 
-router.route(':planId/activities/:activityId')
-  .put((req, res) => { // DONE
+router.route('/:planId/activities/:locationId')
+  .put(async (req, res) => { // DONE
     // update a activity and its parameters
+    try {
+      const userId = req.session.user._id
+      const { planId, locationId } = req.params
+      const { startTime, endTime, notes } = req.body
+
+      const plan = await planData.getPlanById(planId)
+      if (plan.userId.toString() !== userId)
+        return res.status(403).render('error', { error: 'Unauthorized' })
+
+      await planData.updateActivity(planId, locationId, { startTime, endTime, notes })
+      res.redirect(`/plans/${planId}`)
+    } catch (e) {
+      res.status(e.status || 500).render('error', { error: e.message || e })
+    }
   })
-  .delete((req, res) => { // DONE
+  .delete(async (req, res) => { // DONE
     // delete a specific activity
+    try {
+      const userId = req.session.user._id
+      const { planId, locationId } = req.params
+
+      const plan = await planData.getPlanById(planId)
+      if (plan.userId.toString() !== userId)
+        return res.status(403).render('error', { error: 'Unauthorized' })
+
+      await planData.deleteActivity(planId, locationId)
+      res.redirect(`/plans/${planId}`)
+    } catch (e) {
+      res.status(e.status || 500).render('error', { error: e.message || e })
+    }
   })
 
 export default router;
