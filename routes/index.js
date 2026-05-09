@@ -4,6 +4,7 @@ import plansRouter from './plans.js';
 import reviewsRouter from './reviews.js';
 import commentsRouter from './comments.js';
 import adminRouter from './admin.js';
+import friendRouter from './friends.js'
 
 const constructorMethod = (app) => {
   app.use('/', usersRouter);
@@ -12,6 +13,7 @@ const constructorMethod = (app) => {
   app.use('/reviews', reviewsRouter);
   app.use('/comments', commentsRouter);
   app.use('/admin', adminRouter);
+  app.use('/friends', friendRouter)
 
   app.get('/', (req, res) => {
     if (req.session.user) {

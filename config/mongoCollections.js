@@ -16,3 +16,4 @@ export const locations = getCollectionFn('locations');
 export const reviews = getCollectionFn('reviews');
 export const plans = getCollectionFn('plans');
 export const comments = getCollectionFn('comments');
+export const friends = getCollectionFn('friends')
