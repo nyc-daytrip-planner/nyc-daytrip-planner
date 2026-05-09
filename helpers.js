@@ -106,3 +106,15 @@ export function checkDate(value) {
   }
   return value;
 }
+
+export function checkTime(time) {
+  if (!time) throw "Error: time is required"
+  if (typeof time !== 'string') throw "Error: time must be a string"
+
+  time = time.trim().toUpperCase()
+
+  const timeRegex = /^(0?[1-9]|1[0-2]):[0-5]\d\s?(AM|PM)$/
+  if (!timeRegex.test(time)) throw "Error: time must be in HH:MM AM/PM format"
+
+  return time
+}

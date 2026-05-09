@@ -3,6 +3,7 @@ import session from 'express-session';
 import cookieParser from 'cookie-parser';
 import { engine } from 'express-handlebars';
 import configRoutes from './routes/index.js';
+import methodOverride from 'method-override'
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
+app.use(methodOverride('_method'))
 
 // session
 app.use(session({
