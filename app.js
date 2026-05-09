@@ -2,6 +2,7 @@ import express from 'express';
 import session from 'express-session';
 import { engine } from 'express-handlebars';
 import configRoutes from './routes/index.js';
+import methodOverride from 'method-override'
 
 const app = express();
 
@@ -22,6 +23,7 @@ app.set('views', './views');
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
+app.use(methodOverride('_method'))
 
 // session
 app.use(session({

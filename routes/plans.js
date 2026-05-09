@@ -51,13 +51,13 @@ router.get('/all', async (req, res) => { // DONE
 router.post('/activities', async (req, res) => {
   try {
     const userId = req.session.user._id
-    const { planId, locationId, startTime, endTime, notes } = req.body
+    const { planId, locationId, locationName, startTime, endTime, notes } = req.body
 
     const plan = await planData.getPlanById(planId)
     if (plan.userId.toString() !== userId)
       return res.status(403).render('error', { error: 'Unauthorized' })
 
-    await planData.addActivity(planId, locationId, startTime, endTime, notes)
+    await planData.addActivity(planId, locationId, locationName, startTime, endTime, notes)
     res.redirect(`/plans/${planId}`)
   } catch (e) {
     res.status(e.status || 500).render('error', { error: e.message || e })
@@ -75,6 +75,17 @@ router.route('/:planId') // plan specific page
       if (plan.userId.toString() !== userId)
         return res.status(403).render('error', { error: 'Unauthorized' })
 
+      plan.activities.sort((a, b) => {
+        const toMinutes = (time) => {
+          const [hourMin, period] = time.split(/(AM|PM)/)
+          let [hours, minutes] = hourMin.trim().split(':').map(Number)
+          if (period === 'PM' && hours !== 12) hours += 12
+          if (period === 'AM' && hours === 12) hours = 0
+          return hours * 60 + minutes
+        }
+        return toMinutes(a.startTime) - toMinutes(b.startTime)
+      })
+
       res.render('plans', { title: 'Current Plan', plan })
     } catch (e) {
       res.status(e.status || 500).render('error', { error: e.message || e })
@@ -91,7 +102,8 @@ router.route('/:planId') // plan specific page
         return res.status(403).render('error', { error: 'Unauthorized' })
 
       if (!req.body) return res.status(400).render('error', { error: 'No data provided' })
-      const { title, date, status, isPublic } = req.body
+      const { title, date, status } = req.body
+      const isPublic = req.body.isPublic === 'true'
 
       const updatedPlan = await planData.updatePlan(planId, { title, date, status, isPublic })
       res.redirect(`/plans/${updatedPlan._id}`)

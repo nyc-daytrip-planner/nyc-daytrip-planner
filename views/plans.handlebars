@@ -1,19 +1,33 @@
-<h1>{{title}}</h1>
-
-{{!-- All plans view --}}
 {{#if plans}}
+<h1>My Plans</h1>
 {{#each plans}}
 <p>{{this.title}} - {{this.date}}</p>
 <a href="/plans/{{this._id}}">View Plan</a>
 {{/each}}
 {{/if}}
 
-{{!-- Single plan view --}}
 {{#if plan}}
 <p>{{plan.title}} - {{plan.date}}</p>
 
 <form method="POST" action="/plans/{{plan._id}}?_method=PUT">
+  <label>Title</label>
   <input type="text" name="title" value="{{plan.title}}" />
+
+  <label>Date</label>
+  <input type="date" name="date" value="{{plan.date}}" />
+
+  <label>Status</label>
+  <select name="status">
+    <option value="active" {{#if (eq plan.status 'active' )}}selected{{/if}}>Active</option>
+    <option value="saved" {{#if (eq plan.status 'saved' )}}selected{{/if}}>Saved</option>
+    <option value="completed" {{#if (eq plan.status 'completed' )}}selected{{/if}}>Completed</option>
+  </select>
+
+  <div>
+    <label>Public</label>
+    <input type="checkbox" name="isPublic" value="true" {{#if plan.isPublic}}checked{{/if}} />
+  </div>
+
   <button type="submit">Update</button>
 </form>
 
@@ -21,21 +35,20 @@
   <button type="submit">Delete</button>
 </form>
 
-<h2>Add Activity</h2>
-<form method="POST" action="/plans/{{plan._id}}/activities">
-  <input type="text" name="startTime" placeholder="10:00 AM" />
-  <input type="text" name="endTime" placeholder="12:00 PM" />
-  <input type="text" name="notes" placeholder="Notes" />
-  <button type="submit">Add Activity</button>
-</form>
-
 <h2>Activities</h2>
+<a href="/explore">+ Add Activity from Explore</a>
+
 {{#if plan.activities}}
 {{#each plan.activities}}
-<p>{{this.startTime}} - {{this.endTime}}: {{this.notes}}</p>
-<form method="POST" action="/plans/{{../plan._id}}/activities/{{this._id}}?_method=DELETE">
-  <button type="submit">Delete Activity</button>
-</form>
+<div>
+  <a href="/explore/{{this.locationId}}">
+    <strong>{{this.locationName}}</strong>
+    <p>{{this.startTime}} - {{this.endTime}}: {{this.notes}}</p>
+  </a>
+  <form method="POST" action="/plans/{{../plan._id}}/activities/{{this._id}}?_method=DELETE">
+    <button type="submit">Delete Activity</button>
+  </form>
+</div>
 {{/each}}
 {{else}}
 <p>No activities yet</p>

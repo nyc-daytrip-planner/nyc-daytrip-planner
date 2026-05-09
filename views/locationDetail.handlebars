@@ -42,6 +42,41 @@
     {{/if}}
   </header>
 
+  {{#if user}}
+  {{#unless isPending}}
+  <button type="button" class="btn-add-plan" data-location-id="{{location._id}}">+ Add to Plan</button>
+
+  <div id="add-to-plan-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Add to Plan</h2>
+      <form method="POST" action="/plans/activities">
+        <input type="hidden" name="locationId" id="modal-location-id" />
+        <input type="hidden" name="locationName" value="{{location.name}}" />
+
+        <label>Select Plan</label>
+        <select name="planId">
+          {{#each userPlans}}
+          <option value="{{this._id}}">{{this.title}}</option>
+          {{/each}}
+        </select>
+
+        <label>Start Time</label>
+        <input type="text" name="startTime" placeholder="10:00AM" />
+
+        <label>End Time</label>
+        <input type="text" name="endTime" placeholder="12:00PM" />
+
+        <label>Notes</label>
+        <input type="text" name="notes" placeholder="Optional notes" />
+
+        <button type="submit">Add to Plan</button>
+        <button type="button" id="close-modal">Cancel</button>
+      </form>
+    </div>
+  </div>
+  {{/unless}}
+  {{/if}}
+
   {{> reviewsSection location=location reviewsList=reviewsList userReview=userReview}}
 
   {{> commentsSection location=location commentsList=commentsList}}

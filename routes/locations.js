@@ -15,6 +15,7 @@ import { getReviewsForLocation } from '../data/reviews.js';
 import { getCommentsForLocation } from '../data/comments.js';
 import { requireLogin, requireAdmin } from '../middleware/auth.js';
 import { checkId } from '../helpers.js';
+import planData from '../data/plans.js'
 
 const router = Router();
 
@@ -185,7 +186,8 @@ router.get('/:id', async function (req, res) {
       userReview,
       isFavorited,
       isPending: !location.approved,
-      userPlans
+      userPlans,
+      user: req.session.user
     });
   } catch (e) {
     if (typeof e === 'string' && /no location found/i.test(e)) {

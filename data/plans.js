@@ -88,7 +88,7 @@ const exportedMethods = {
     return await this.getPlanById(newId.toString())
   },
 
-  async addActivity(planId, locationId, startTime, endTime, notes = "") {
+  async addActivity(planId, locationId, locationName, startTime, endTime, notes = "") {
     // POST
     planId = checkId(planId)
     locationId = checkId(locationId)
@@ -100,6 +100,7 @@ const exportedMethods = {
     const newActivity = {
       _id: new ObjectId(),
       locationId: new ObjectId(locationId),
+      locationName,
       startTime,
       endTime,
       notes
