@@ -1,114 +1,95 @@
-import { friends, users, plans } from "../config/mongoCollections.js";
-import { ObjectId } from "mongodb";
-import { checkId } from "../helpers.js";
+import { users } from "../config/mongoCollections.js"
+import { ObjectId } from "mongodb"
+import { checkId } from "../helpers.js"
 
 const exportedMethods = {
   async sendFriendReq(reqId, recId) {
-    // sending friend requests to friends
     reqId = checkId(reqId)
     recId = checkId(recId)
 
     if (reqId === recId) throw { status: 400, message: 'Cannot send friend request to yourself' }
 
-    const friendCollection = await friends()
+    const userCollection = await users()
 
-    const existing = await friendCollection.findOne({
-      $or: [
-        { reqId: new ObjectId(reqId), recId: new ObjectId(recId) },
-        { reqId: new ObjectId(recId), recId: new ObjectId(reqId) }
-      ]
-    })
-    if (existing) throw { status: 400, message: 'Friend request already exists' }
+    // check if already friends or request already sent
+    const requester = await userCollection.findOne({ _id: new ObjectId(reqId) })
+    if (requester.friends.map(id => id.toString()).includes(recId))
+      throw { status: 400, message: 'Already friends' }
 
-    const newRequest = {
-      reqId: new ObjectId(reqId),
-      recId: new ObjectId(recId),
-      status: 'pending',
-      createdAt: new Date(),
-      updatedAt: new Date()
-    }
+    // add to recipient's pending requests
+    const result = await userCollection.updateOne(
+      { _id: new ObjectId(recId) },
+      { $push: { pendingRequests: new ObjectId(reqId) } }
+    )
 
-    const result = await friendCollection.insertOne(newRequest)
-    if (!result.acknowledged) throw { status: 500, message: 'Could not send friend request' }
+    if (result.modifiedCount === 0) throw { status: 500, message: 'Could not send friend request' }
 
-    return { ...newRequest, _id: result.insertedId }
+    return { status: 'pending' }
   },
 
-  async acceptFriendReq(friendId) {
-    // accepting received friend request
-    friendId = checkId(friendId)
+  async acceptFriendReq(reqId, recId) {
+    reqId = checkId(reqId)
+    recId = checkId(recId)
 
-    const friendCollection = await friends()
-    const result = await friendCollection.updateOne(
-      { _id: new ObjectId(friendId), status: 'pending' },
+    const userCollection = await users()
+
+    // add each other to friends array and remove from pending
+    await userCollection.updateOne(
+      { _id: new ObjectId(recId) },
       {
-        $set: {
-          status: 'accepted',
-          updatedAt: new Date()
-        }
+        $push: { friends: new ObjectId(reqId) },
+        $pull: { pendingRequests: new ObjectId(reqId) }
       }
     )
 
-    if (result.modifiedCount === 0) throw { status: 404, message: 'Friend request not found or already accepted' }
-
-    return { friendId, status: 'accepted' }
-  },
-
-  async declineFriendReq(friendId) {
-    // POST decline friend req
-    friendId = checkId(friendId)
-
-    const friendCollection = await friends()
-    const result = await friendCollection.updateOne(
-      { _id: new ObjectId(friendId), status: 'pending' },
-      {
-        $set: {
-          status: 'declined',
-          updatedAt: new Date()
-        }
-      }
+    await userCollection.updateOne(
+      { _id: new ObjectId(reqId) },
+      { $push: { friends: new ObjectId(recId) } }
     )
 
-    if (result.modifiedCount === 0) throw { status: 404, message: 'Friend request not found or already declined' }
+    return { status: 'accepted' }
+  },
 
-    return { friendId, status: 'declined' }
+  async declineFriendReq(reqId, recId) {
+    reqId = checkId(reqId)
+    recId = checkId(recId)
+
+    const userCollection = await users()
+    const result = await userCollection.updateOne(
+      { _id: new ObjectId(recId) },
+      { $pull: { pendingRequests: new ObjectId(reqId) } }
+    )
+
+    if (result.modifiedCount === 0) throw { status: 404, message: 'Request not found' }
+
+    return { status: 'declined' }
   },
 
   async getFriends(userId) {
-    // get friends of the current user
     userId = checkId(userId)
 
-    const friendCollection = await friends()
-    const friendships = await friendCollection.find({
-      $or: [
-        { reqId: new ObjectId(userId) },
-        { recId: new ObjectId(userId) }
-      ],
-      status: 'accepted'
-    }).toArray()
-
-    // get the other user's id from each friendship
-    const friendIds = friendships.map(f =>
-      f.reqId.toString() === userId ? f.recId : f.reqId
-    )
-
-    // fetch user details for each friend
     const userCollection = await users()
+    const user = await userCollection.findOne({ _id: new ObjectId(userId) })
+
+    if (!user) throw { status: 404, message: 'User not found' }
+
     const friendList = await userCollection.find({
-      _id: { $in: friendIds }
+      _id: { $in: user.friends }
     }).toArray()
 
     return friendList
   },
 
   async getPendingReq(userId) {
-    // GET incoming reqs
     userId = checkId(userId)
 
-    const friendCollection = await friends()
-    const pending = await friendCollection.find({
-      recId: new ObjectId(userId),
-      status: 'pending'
+    const userCollection = await users()
+    const user = await userCollection.findOne({ _id: new ObjectId(userId) })
+
+    if (!user) throw { status: 404, message: 'User not found' }
+
+    const pending = await userCollection.find({
+      _id: { $in: user.pendingRequests || [] }
     }).toArray()
 
     return pending

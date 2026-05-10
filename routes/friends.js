@@ -26,22 +26,28 @@ router.post('/request/:userId', async (req, res) => {
   }
 });
 
-router.post('/accept/:friendshipId', async (req, res) => {
+router.post('/accept/:reqId', async (req, res) => {
   // POST accept a friend request
   try {
-    await friendData.acceptFriendReq(req.params.friendshipId)
+    const recId = req.session.user._id
+    const reqId = req.params.reqId
+    await friendData.acceptFriendReq(reqId, recId)
     res.redirect('/friends')
   } catch (e) {
     res.status(e.status || 500).render('error', { error: e.message || e })
   }
 });
 
-router.post('/decline/:friendshipId', async (req, res) => {
-  // POST accept a friend request
+router.post('/decline/:reqId', async (req, res) => {
+  // POST decline a friend request
   try {
-    await friendData.declineFriendReq(req.params.friendshipId)
+    const recId = req.session.user._id
+    const reqId = req.params.reqId
+    await friendData.declineFriendReq(reqId, recId)
     res.redirect('/friends')
   } catch (e) {
     res.status(e.status || 500).render('error', { error: e.message || e })
   }
 });
+
+export default router;
