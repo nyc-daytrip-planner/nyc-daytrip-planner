@@ -6,6 +6,57 @@ import xss from 'xss';
 const router = Router();
 const wantsJson = (req) => (req.get('accept') || '').includes('application/json');
 
+function validateLoginInput(email, password) {
+  if (typeof email !== 'string' || email.trim().length === 0) {
+    throw 'Email is required';
+  }
+  if (typeof password !== 'string' || password.trim().length === 0) {
+    throw 'Password is required';
+  }
+}
+
+function validateSignupInput(firstName, lastName, email, password, confirmPassword) {
+  if (typeof firstName !== 'string' || firstName.trim().length === 0) {
+    throw 'First name is required';
+  }
+  if (typeof lastName !== 'string' || lastName.trim().length === 0) {
+    throw 'Last name is required';
+  }
+  if (typeof email !== 'string' || email.trim().length === 0) {
+    throw 'Email is required';
+  }
+  if (typeof password !== 'string' || password.trim().length === 0) {
+    throw 'Password is required';
+  }
+  if (typeof confirmPassword !== 'string' || confirmPassword.trim().length === 0) {
+    throw 'Confirm password is required';
+  }
+
+  if (firstName.trim().length < 2 || firstName.trim().length > 20) {
+    throw 'First name must be between 2 and 20 characters';
+  }
+  if (lastName.trim().length < 2 || lastName.trim().length > 20) {
+    throw 'Last name must be between 2 and 20 characters';
+  }
+  if (!/^[a-zA-Z ]+$/.test(firstName.trim())) {
+    throw 'First name must contain only letters';
+  }
+  if (!/^[a-zA-Z ]+$/.test(lastName.trim())) {
+    throw 'Last name must contain only letters';
+  }
+
+  if (password.length < 8) throw 'Password must be at least 8 characters';
+  if (!/[A-Z]/.test(password)) throw 'Password must contain at least one uppercase letter';
+  if (!/[a-z]/.test(password)) throw 'Password must contain at least one lowercase letter';
+  if (!/[0-9]/.test(password)) throw 'Password must contain at least one number';
+  if (!/[!@#$%^&*]/.test(password)) throw 'Password must contain at least one special character (!@#$%^&*)';
+  if (/\s/.test(password)) throw 'Password cannot contain spaces';
+
+  if (password !== confirmPassword) {
+    throw 'Passwords do not match';
+  }
+}
+
 // GET /login
 router.get('/login', requireGuest, async function(req, res) {
   res.render('login', { title: 'Login' });
@@ -19,6 +70,7 @@ router.post('/login', requireGuest, async function(req, res) {
   try {
     let email    = xss(body.email);
     let password = xss(body.password);
+    validateLoginInput(email, password);
 
     const user = await loginUser(email, password);
     req.session.user = user;
@@ -63,10 +115,7 @@ router.post('/signup', requireGuest, async function(req, res) {
     let email           = xss(body.email);
     let password        = xss(body.password);
     let confirmPassword = xss(body.confirmPassword);
-
-    if (password !== confirmPassword) {
-      throw 'Passwords do not match';
-    }
+    validateSignupInput(firstName, lastName, email, password, confirmPassword);
 
     const result = await createUser(firstName, lastName, email, password);
 
