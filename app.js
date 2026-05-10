@@ -46,12 +46,10 @@ let totalRequests = 0;
 app.use((req, res, next) => {
   totalRequests++;
 
-  console.log('The request has all the following cookies:');
-  console.log(req.cookies);
+  // console.log('The request has all the following cookies:');
+  // console.log(req.cookies);
 
-  if (req.cookies.lastAccessed) {
-    console.log('This user last accessed the site at ' + req.cookies.lastAccessed);
-  } else {
+  if (!req.cookies.lastAccessed) {
     console.log('This user has never accessed the site before');
   }
 

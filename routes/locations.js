@@ -41,6 +41,47 @@ function requireAdminJson(req, res) {
   return true;
 }
 
+function validateCreateLocationInput(input) {
+  if (!input.name || typeof input.name !== 'string' || input.name.trim().length === 0) {
+    throw 'Location name is required';
+  }
+  if (!input.type || typeof input.type !== 'string' || input.type.trim().length === 0) {
+    throw 'Location type is required';
+  }
+  if (!ALLOWED_TYPES.includes(input.type.toLowerCase())) {
+    throw 'Type must be one of: ' + ALLOWED_TYPES.join(', ');
+  }
+  if (input.name.trim().length > 100) {
+    throw 'Name cannot be longer than 100 characters';
+  }
+  if (input.zipCode && !/^\d{5}$/.test(input.zipCode.trim())) {
+    throw 'ZIP code must be 5 digits';
+  }
+  if (input.latitude !== '') {
+    const latitude = Number(input.latitude);
+    if (isNaN(latitude) || latitude < -90 || latitude > 90) {
+      throw 'Latitude must be between -90 and 90';
+    }
+  }
+  if (input.longitude !== '') {
+    const longitude = Number(input.longitude);
+    if (isNaN(longitude) || longitude < -180 || longitude > 180) {
+      throw 'Longitude must be between -180 and 180';
+    }
+  }
+  if (input.website) {
+    let url;
+    try {
+      url = new URL(input.website);
+    } catch (e) {
+      throw 'Website must be a valid URL';
+    }
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+      throw 'Website must use http or https';
+    }
+  }
+}
+
 router.get('/', async function (req, res) {
   const filters = {};
   if (req.query.type) filters.type = xss(String(req.query.type));
@@ -92,6 +133,7 @@ router.post('/', requireLogin, async function (req, res) {
   const vm = { title: 'Suggest a Location', types: ALLOWED_TYPES };
 
   try {
+    validateCreateLocationInput(input);
     const created = await createLocation(input, { actor: req.session.user });
     if (created.approved) return res.redirect('/explore/' + created._id);
     return res.render('addLocation', {
