@@ -1,0 +1,15 @@
+{
+  "pendingLocations": [
+    {
+      "name": "Pending Approval Cafe",
+      "type": "cafe",
+      "address": "456 Pending Ave, New York, NY",
+      "zipCode": "10001",
+      "latitude": 40.7505,
+      "longitude": -73.9965,
+      "phone": "111-111-1111",
+      "website": "https://example.com/pending-cafe",
+      "priceCategory": 2
+    }
+  ]
+}
