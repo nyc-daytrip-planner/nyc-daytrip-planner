@@ -1,0 +1,10 @@
+{
+  "reviews": [
+    {
+      "locationName": "American Museum of Natural History",
+      "authorEmail": "user@dayoutnyc.com",
+      "rating": 3,
+      "reviewText": "This app sucks!"
+    }
+  ]
+}
