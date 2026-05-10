@@ -3,43 +3,79 @@
     <div class="location-title-row">
       <h1>{{location.name}}</h1>
       {{#if user}}
-        {{#unless isPending}}
-          <button id="favorite-btn" type="button" class="favorite-btn" data-favorited="{{isFavorited}}">
-            {{#if isFavorited}}&#9733; Favorited{{else}}&#9734; Favorite{{/if}}
-          </button>
-        {{/unless}}
+      {{#unless isPending}}
+      <button id="favorite-btn" type="button" class="favorite-btn" data-favorited="{{isFavorited}}">
+        {{#if isFavorited}}&#9733; Favorited{{else}}&#9734; Favorite{{/if}}
+      </button>
+      {{/unless}}
       {{/if}}
     </div>
 
     {{#if isPending}}
-      <p class="pending-banner">This location is pending admin approval.</p>
+    <p class="pending-banner">This location is pending admin approval.</p>
     {{/if}}
 
     <p class="location-meta">
       <span class="location-type">{{location.type}}</span>
       {{#if location.priceCategory}}
-        <span class="location-price">{{priceLabel location.priceCategory}}</span>
+      <span class="location-price">{{priceLabel location.priceCategory}}</span>
       {{/if}}
       <span class="reviews-aggregate">
         {{#if location.averageRating}}
-          &#9733; {{location.averageRating}} / 5
-          <span class="muted">({{location.totalReviews}} review{{#unless (eq location.totalReviews 1)}}s{{/unless}})</span>
+        &#9733; {{location.averageRating}} / 5
+        <span class="muted">({{location.totalReviews}} review{{#unless (eq location.totalReviews
+          1)}}s{{/unless}})</span>
         {{else}}
-          <span class="muted">No rating yet</span>
+        <span class="muted">No rating yet</span>
         {{/if}}
       </span>
     </p>
 
     {{#if location.address}}
-      <p class="location-address">{{location.address}}{{#if location.zipCode}}, {{location.zipCode}}{{/if}}</p>
+    <p class="location-address">{{location.address}}{{#if location.zipCode}}, {{location.zipCode}}{{/if}}</p>
     {{/if}}
     {{#if location.phone}}<p class="location-contact">Phone: {{location.phone}}</p>{{/if}}
     {{#if location.website}}
-      <p class="location-contact">
-        Website: <a href="{{location.website}}" target="_blank" rel="noopener noreferrer">{{location.website}}</a>
-      </p>
+    <p class="location-contact">
+      Website: <a href="{{location.website}}" target="_blank" rel="noopener noreferrer">{{location.website}}</a>
+    </p>
     {{/if}}
   </header>
+
+  {{#if user}}
+  {{#unless isPending}}
+  <button type="button" class="btn-add-plan" data-location-id="{{location._id}}">+ Add to Plan</button>
+
+  <div id="add-to-plan-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Add to Plan</h2>
+      <form method="POST" action="/plans/activities">
+        <input type="hidden" name="locationId" id="modal-location-id" />
+        <input type="hidden" name="locationName" value="{{location.name}}" />
+
+        <label>Select Plan</label>
+        <select name="planId">
+          {{#each userPlans}}
+          <option value="{{this._id}}">{{this.title}}</option>
+          {{/each}}
+        </select>
+
+        <label>Start Time</label>
+        <input type="text" name="startTime" placeholder="10:00AM" />
+
+        <label>End Time</label>
+        <input type="text" name="endTime" placeholder="12:00PM" />
+
+        <label>Notes</label>
+        <input type="text" name="notes" placeholder="Optional notes" />
+
+        <button type="submit">Add to Plan</button>
+        <button type="button" id="close-modal">Cancel</button>
+      </form>
+    </div>
+  </div>
+  {{/unless}}
+  {{/if}}
 
   {{> reviewsSection location=location reviewsList=reviewsList userReview=userReview}}
 

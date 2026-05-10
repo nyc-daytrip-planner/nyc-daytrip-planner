@@ -15,6 +15,7 @@ import { getReviewsForLocation } from '../data/reviews.js';
 import { getCommentsForLocation } from '../data/comments.js';
 import { requireLogin, requireAdmin } from '../middleware/auth.js';
 import { checkId } from '../helpers.js';
+import planData from '../data/plans.js'
 
 const router = Router();
 
@@ -40,7 +41,7 @@ function requireAdminJson(req, res) {
   return true;
 }
 
-router.get('/', async function(req, res) {
+router.get('/', async function (req, res) {
   const filters = {};
   if (req.query.type) filters.type = xss(String(req.query.type));
   if (req.query.priceCategory) filters.priceCategory = xss(String(req.query.priceCategory));
@@ -71,11 +72,11 @@ router.get('/', async function(req, res) {
   }
 });
 
-router.get('/add', requireLogin, async function(req, res) {
+router.get('/add', requireLogin, async function (req, res) {
   res.render('addLocation', { title: 'Suggest a Location', types: ALLOWED_TYPES });
 });
 
-router.post('/', requireLogin, async function(req, res) {
+router.post('/', requireLogin, async function (req, res) {
   const body = req.body || {};
   const input = {
     name: xss(body.name || ''),
@@ -106,7 +107,7 @@ router.post('/', requireLogin, async function(req, res) {
   }
 });
 
-router.get('/admin/pending', requireAdmin, async function(req, res) {
+router.get('/admin/pending', requireAdmin, async function (req, res) {
   try {
     const pending = await getPendingLocations();
     return res.render('adminLocationsHost', { title: 'Pending Locations', pending });
@@ -118,7 +119,7 @@ router.get('/admin/pending', requireAdmin, async function(req, res) {
   }
 });
 
-router.post('/admin/:id/approve', async function(req, res) {
+router.post('/admin/:id/approve', async function (req, res) {
   if (!requireAdminJson(req, res)) return;
   try {
     const result = await approveLocation(req.params.id);
@@ -128,7 +129,7 @@ router.post('/admin/:id/approve', async function(req, res) {
   }
 });
 
-router.post('/admin/:id/reject', async function(req, res) {
+router.post('/admin/:id/reject', async function (req, res) {
   if (!requireAdminJson(req, res)) return;
   try {
     const result = await rejectLocation(req.params.id);
@@ -138,7 +139,7 @@ router.post('/admin/:id/reject', async function(req, res) {
   }
 });
 
-router.post('/:id/favorite', async function(req, res) {
+router.post('/:id/favorite', async function (req, res) {
   if (!req.session.user) {
     return res.status(401).json({ ok: false, error: 'You must be logged in' });
   }
@@ -150,7 +151,7 @@ router.post('/:id/favorite', async function(req, res) {
   }
 });
 
-router.get('/:id', async function(req, res) {
+router.get('/:id', async function (req, res) {
   let locationId;
   try {
     locationId = checkId(req.params.id);
@@ -176,6 +177,7 @@ router.get('/:id', async function(req, res) {
       ? reviewsList.find((r) => r.userId === sessionUser._id) || null
       : null;
 
+    const userPlans = req.session.user ? await planData.getAllPlans(req.session.user._id) : []
     return res.render('locationDetail', {
       title: location.name,
       location,
@@ -183,7 +185,9 @@ router.get('/:id', async function(req, res) {
       commentsList,
       userReview,
       isFavorited,
-      isPending: !location.approved
+      isPending: !location.approved,
+      userPlans,
+      user: req.session.user
     });
   } catch (e) {
     if (typeof e === 'string' && /no location found/i.test(e)) {

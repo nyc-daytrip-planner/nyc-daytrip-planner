@@ -3,16 +3,16 @@
     <h1>Explore NYC</h1>
     <div class="explore-actions">
       {{#if user}}
-        <a class="btn-secondary" href="/explore/add">+ Suggest a location</a>
-        {{#if (eq user.role 'admin')}}
-          <a class="btn-secondary admin-link" href="/explore/admin/pending">Pending approvals</a>
-        {{/if}}
+      <a class="btn-secondary" href="/explore/add">+ Suggest a location</a>
+      {{#if (eq user.role 'admin')}}
+      <a class="btn-secondary admin-link" href="/explore/admin/pending">Pending approvals</a>
+      {{/if}}
       {{/if}}
     </div>
   </header>
 
   {{#if error}}
-    <p class="error">{{error}}</p>
+  <p class="error">{{error}}</p>
   {{/if}}
 
   <form class="explore-filters" method="GET" action="/explore">
@@ -27,7 +27,7 @@
         <select name="type">
           <option value="">All</option>
           {{#each types}}
-            <option value="{{this}}"{{#if (eq this ../activeType)}} selected{{/if}}>{{this}}</option>
+          <option value="{{this}}" {{#if (eq this ../activeType)}} selected{{/if}}>{{this}}</option>
           {{/each}}
         </select>
       </label>
@@ -36,10 +36,10 @@
         Price
         <select name="priceCategory">
           <option value="">Any</option>
-          <option value="1"{{#if (eq activePrice "1")}} selected{{/if}}>$</option>
-          <option value="2"{{#if (eq activePrice "2")}} selected{{/if}}>$$</option>
-          <option value="3"{{#if (eq activePrice "3")}} selected{{/if}}>$$$</option>
-          <option value="4"{{#if (eq activePrice "4")}} selected{{/if}}>$$$$</option>
+          <option value="1" {{#if (eq activePrice "1" )}} selected{{/if}}>$</option>
+          <option value="2" {{#if (eq activePrice "2" )}} selected{{/if}}>$$</option>
+          <option value="3" {{#if (eq activePrice "3" )}} selected{{/if}}>$$$</option>
+          <option value="4" {{#if (eq activePrice "4" )}} selected{{/if}}>$$$$</option>
         </select>
       </label>
 
@@ -47,18 +47,18 @@
         Min rating
         <select name="minRating">
           <option value="">Any</option>
-          <option value="3"{{#if (eq activeMinRating "3")}} selected{{/if}}>3+</option>
-          <option value="4"{{#if (eq activeMinRating "4")}} selected{{/if}}>4+</option>
-          <option value="4.5"{{#if (eq activeMinRating "4.5")}} selected{{/if}}>4.5+</option>
+          <option value="3" {{#if (eq activeMinRating "3" )}} selected{{/if}}>3+</option>
+          <option value="4" {{#if (eq activeMinRating "4" )}} selected{{/if}}>4+</option>
+          <option value="4.5" {{#if (eq activeMinRating "4.5" )}} selected{{/if}}>4.5+</option>
         </select>
       </label>
 
       <label>
         Sort
         <select name="sort">
-          <option value="name"{{#if (eq activeSort "name")}} selected{{/if}}>Name (A-Z)</option>
-          <option value="top"{{#if (eq activeSort "top")}} selected{{/if}}>Top rated</option>
-          <option value="recent"{{#if (eq activeSort "recent")}} selected{{/if}}>Recently added</option>
+          <option value="name" {{#if (eq activeSort "name" )}} selected{{/if}}>Name (A-Z)</option>
+          <option value="top" {{#if (eq activeSort "top" )}} selected{{/if}}>Top rated</option>
+          <option value="recent" {{#if (eq activeSort "recent" )}} selected{{/if}}>Recently added</option>
         </select>
       </label>
 
@@ -68,12 +68,14 @@
   </form>
 
   {{#if empty}}
-    <p class="explore-empty">No locations match your filters.</p>
+  <p class="explore-empty">No locations match your filters.</p>
   {{else}}
-    <ul class="location-grid">
-      {{#each locations}}
-        {{> locationCard location=this}}
-      {{/each}}
-    </ul>
+  <ul class="location-grid">
+    {{#each locations}}
+    {{> locationCard location=this user=../user}}
+    {{/each}}
+  </ul>
   {{/if}}
 </section>
+
+<script src="/js/explore.js"></script>

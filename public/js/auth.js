@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   const loginForm = document.getElementById('login-form');
   if (loginForm) {
-    loginForm.addEventListener('submit', function(e) {
+    loginForm.addEventListener('submit', async function(e) {
       let valid = true;
 
       const email         = document.getElementById('email').value.trim();
@@ -37,13 +37,37 @@ document.addEventListener('DOMContentLoaded', function() {
         valid = false;
       }
 
-      if (!valid) e.preventDefault();
+      if (!valid) {
+        e.preventDefault();
+        return;
+      }
+
+      e.preventDefault();
+
+      try {
+        const resp = await fetch('/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await resp.json();
+        if (!resp.ok || !data.ok) {
+          passwordError.textContent = data.error || 'Unable to log in';
+          return;
+        }
+        window.location.assign(data.redirectTo || '/explore');
+      } catch (err) {
+        passwordError.textContent = 'Network error. Please try again.';
+      }
     });
   }
 
   const signupForm = document.getElementById('signup-form');
   if (signupForm) {
-    signupForm.addEventListener('submit', function(e) {
+    signupForm.addEventListener('submit', async function(e) {
       let valid = true;
 
       const firstName            = document.getElementById('firstName').value.trim();
@@ -124,7 +148,35 @@ document.addEventListener('DOMContentLoaded', function() {
         valid = false;
       }
 
-      if (!valid) e.preventDefault();
+      if (!valid) {
+        e.preventDefault();
+        return;
+      }
+
+      e.preventDefault();
+
+      try {
+        const resp = await fetch('/signup', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({ firstName, lastName, email, password, confirmPassword })
+        });
+        const data = await resp.json();
+        if (!resp.ok || !data.ok) {
+          if (data.emailError) {
+            emailError.textContent = data.emailError;
+          } else {
+            confirmPasswordError.textContent = data.error || 'Unable to create account';
+          }
+          return;
+        }
+        window.location.assign(data.redirectTo || '/login');
+      } catch (err) {
+        confirmPasswordError.textContent = 'Network error. Please try again.';
+      }
     });
   }
 

@@ -1,0 +1,12 @@
+<h1>{{title}}</h1>
+
+{{#if activities}}
+{{#each activities}}
+<p>{{this.startTime}} - {{this.endTime}}: {{this.notes}}</p>
+<form method="POST" action="/plans/{{this._id}}?_method=DELETE">
+  <button type="submit">Delete Activity</button>
+</form>
+{{/each}}
+{{else}}
+<p>No activities yet</p>
+{{/if}}
