@@ -56,10 +56,11 @@
       Price category
       <select name="priceCategory">
         <option value=""{{#unless priceCategory}} selected{{/unless}}>N/A</option>
-        <option value="1"{{#if (eq priceCategory "1")}} selected{{/if}}>$ (cheap)</option>
-        <option value="2"{{#if (eq priceCategory "2")}} selected{{/if}}>$$</option>
-        <option value="3"{{#if (eq priceCategory "3")}} selected{{/if}}>$$$</option>
-        <option value="4"{{#if (eq priceCategory "4")}} selected{{/if}}>$$$$ (expensive)</option>
+        <option value="Free"{{#if (eq priceCategory "Free")}} selected{{/if}}>Free</option>
+        <option value="$"{{#if (eq priceCategory "$")}} selected{{/if}}>$ (cheap)</option>
+        <option value="$$"{{#if (eq priceCategory "$$")}} selected{{/if}}>$$</option>
+        <option value="$$$"{{#if (eq priceCategory "$$$")}} selected{{/if}}>$$$</option>
+        <option value="$$$$"{{#if (eq priceCategory "$$$$")}} selected{{/if}}>$$$$ (expensive)</option>
       </select>
     </label>
 
