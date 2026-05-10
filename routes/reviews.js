@@ -4,14 +4,9 @@ import { locations } from '../config/mongoCollections.js';
 import {
   createReview,
   getReviewById,
-  getReviewsForLocation,
   updateReview,
-  deleteReview,
-  getAllReviewsForAdmin
+  deleteReview
 } from '../data/reviews.js';
-import { getCommentsForLocation, getAllCommentsForAdmin } from '../data/comments.js';
-import { checkId } from '../helpers.js';
-import { requireAdmin } from '../middleware/auth.js';
 
 const router = Router();
 
@@ -32,72 +27,6 @@ async function readAggregates(locationId) {
   if (!loc) return null;
   return { averageRating: loc.averageRating, totalReviews: loc.totalReviews };
 }
-
-// Temporary admin moderation host. Lets review developer test the moderation flow
-// before signin/signup developer ships /admin's real dashboard. Once that lands, this route
-// and views/adminModerationHost.handlebars can both be deleted; signin/signup developer just
-// includes the two admin* partials inside their dashboard view.
-router.get('/admin-mod-host', requireAdmin, async function(req, res) {
-  try {
-    const allReviews = await getAllReviewsForAdmin();
-    const allComments = await getAllCommentsForAdmin();
-    return res.render('adminModerationHost', {
-      title: 'Admin Moderation',
-      allReviews,
-      allComments
-    });
-  } catch (e) {
-    return res.status(500).render('error', {
-      title: 'Server Error',
-      error: typeof e === 'string' ? e : 'Server error'
-    });
-  }
-});
-
-// Temporary host page for testing the reviews partial.
-// explore developer will eventually render the same partial inside /explore/:id.
-router.get('/location/:id', async function(req, res) {
-  let locationId;
-  try {
-    locationId = checkId(req.params.id);
-  } catch (e) {
-    return res.status(400).render('error', {
-      title: 'Bad Request',
-      error: typeof e === 'string' ? e : 'Invalid id'
-    });
-  }
-
-  try {
-    const locsCol = await locations();
-    const location = await locsCol.findOne({ _id: new ObjectId(locationId) });
-    if (!location) {
-      return res.status(404).render('error', {
-        title: 'Not Found',
-        error: 'Location not found'
-      });
-    }
-    location._id = location._id.toString();
-
-    const reviewsList = await getReviewsForLocation(locationId);
-    const commentsList = await getCommentsForLocation(locationId);
-    const userReview = req.session.user
-      ? reviewsList.find((r) => r.userId === req.session.user._id) || null
-      : null;
-
-    return res.render('reviewsHost', {
-      title: location.name,
-      location,
-      reviewsList,
-      commentsList,
-      userReview
-    });
-  } catch (e) {
-    return res.status(500).render('error', {
-      title: 'Server Error',
-      error: typeof e === 'string' ? e : 'Server error'
-    });
-  }
-});
 
 // AJAX: create review
 router.post('/', async function(req, res) {
