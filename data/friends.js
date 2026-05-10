@@ -1,4 +1,4 @@
-import { users } from "../config/mongoCollections.js"
+import { users, plans } from "../config/mongoCollections.js"
 import { ObjectId } from "mongodb"
 import { checkId } from "../helpers.js"
 
@@ -77,7 +77,18 @@ const exportedMethods = {
       _id: { $in: user.friends }
     }).toArray()
 
-    return friendList
+    const planCollection = await plans()
+    const friendsWithPlans = await Promise.all(
+      friendList.map(async (friend) => {
+        const recentPlan = await planCollection.findOne(
+          { userId: friend._id, isPublic: true },
+          { sort: { createdAt: -1 } }
+        )
+        return { ...friend, recentPlan }
+      })
+    )
+
+    return friendsWithPlans
   },
 
   async getPendingReq(userId) {

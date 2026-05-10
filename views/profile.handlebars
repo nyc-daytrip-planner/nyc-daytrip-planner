@@ -14,13 +14,13 @@
     <h2>Friends List</h2>
 
     {{#if friends.length}}
-      <ul>
-        {{#each friends}}
-          <li>{{this}}</li>
-        {{/each}}
-      </ul>
+    <ul>
+      {{#each friends}}
+      <li>{{this.firstName}} {{this.lastName}}</li>
+      {{/each}}
+    </ul>
     {{else}}
-      <p>You have no friends added yet.</p>
+    <p>You have no friends added yet.</p>
     {{/if}}
   </div>
 </section>

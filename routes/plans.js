@@ -72,7 +72,8 @@ router.route('/:planId') // plan specific page
       const planId = req.params.planId
 
       const plan = await planData.getPlanById(planId)
-      if (plan.userId.toString() !== userId)
+
+      if (plan.userId.toString() !== userId && !plan.isPublic)
         return res.status(403).render('error', { error: 'Unauthorized' })
 
       plan.activities.sort((a, b) => {
@@ -86,7 +87,8 @@ router.route('/:planId') // plan specific page
         return toMinutes(a.startTime) - toMinutes(b.startTime)
       })
 
-      res.render('plans', { title: 'Current Plan', plan })
+      const isOwner = plan.userId.toString() === userId
+      res.render('plans', { title: 'Current Plan', plan, isOwner })
     } catch (e) {
       res.status(e.status || 500).render('error', { error: e.message || e })
     }

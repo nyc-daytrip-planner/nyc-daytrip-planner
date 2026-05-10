@@ -20,6 +20,11 @@
 {{#each friendsList}}
 <div>
   <p>{{this.firstName}} {{this.lastName}}</p>
+  {{#if this.recentPlan}}
+  <p>Latest plan: <a href="/plans/{{this.recentPlan._id}}">{{this.recentPlan.title}}</a> - {{this.recentPlan.date}}</p>
+  {{else}}
+  <p>No public plans yet</p>
+  {{/if}}
 </div>
 {{/each}}
 {{else}}
