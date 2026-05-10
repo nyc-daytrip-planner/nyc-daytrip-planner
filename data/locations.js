@@ -3,6 +3,7 @@ import { locations, users } from '../config/mongoCollections.js';
 import { checkId, checkString } from '../helpers.js';
 
 const ALLOWED_TYPES = ['cafe', 'museum', 'park', 'restaurant', 'other'];
+const ALLOWED_PRICE_CATEGORIES = ['Free', '$', '$$', '$$$', '$$$$'];
 
 function checkType(value) {
   value = checkString(value);
@@ -79,11 +80,15 @@ function checkWebsite(value) {
 
 function checkPriceCategory(value) {
   if (value === undefined || value === null || value === '') return null;
-  const num = Number(value);
-  if (isNaN(num)) throw 'Price category must be a number';
-  if (!Number.isInteger(num)) throw 'Price category must be a whole number';
-  if (num < 1 || num > 4) throw 'Price category must be between 1 and 4';
-  return num;
+  if (typeof value !== 'string') throw 'Price category must be a string';
+  const normalized = value.trim();
+  if (normalized.length === 0) return null;
+  const lowered = normalized.toLowerCase();
+  if (lowered === 'free') return 'Free';
+  if (!ALLOWED_PRICE_CATEGORIES.includes(normalized)) {
+    throw 'Price category must be one of: Free, $, $$, $$$, $$$$';
+  }
+  return normalized;
 }
 
 function serializeLocation(loc) {

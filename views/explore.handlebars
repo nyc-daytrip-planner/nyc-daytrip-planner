@@ -36,10 +36,11 @@
         Price
         <select name="priceCategory">
           <option value="">Any</option>
-          <option value="1" {{#if (eq activePrice "1" )}} selected{{/if}}>$</option>
-          <option value="2" {{#if (eq activePrice "2" )}} selected{{/if}}>$$</option>
-          <option value="3" {{#if (eq activePrice "3" )}} selected{{/if}}>$$$</option>
-          <option value="4" {{#if (eq activePrice "4" )}} selected{{/if}}>$$$$</option>
+          <option value="Free" {{#if (eq activePrice "Free" )}} selected{{/if}}>Free</option>
+          <option value="$" {{#if (eq activePrice "$" )}} selected{{/if}}>$</option>
+          <option value="$$" {{#if (eq activePrice "$$" )}} selected{{/if}}>$$</option>
+          <option value="$$$" {{#if (eq activePrice "$$$" )}} selected{{/if}}>$$$</option>
+          <option value="$$$$" {{#if (eq activePrice "$$$$" )}} selected{{/if}}>$$$$</option>
         </select>
       </label>
 
