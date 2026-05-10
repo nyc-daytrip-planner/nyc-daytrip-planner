@@ -14,7 +14,11 @@ app.engine('handlebars', engine({
   partialsDir: './views/partials',
   helpers: {
     eq: (a, b) => a === b,
-    priceLabel: (n) => (Number.isInteger(n) && n > 0 ? '$'.repeat(n) : '')
+    priceLabel: (value) => {
+      if (typeof value === 'string') return value;
+      if (Number.isInteger(value) && value > 0) return '$'.repeat(value);
+      return '';
+    }
   }
 }));
 app.set('view engine', 'handlebars');
