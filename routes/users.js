@@ -4,6 +4,7 @@ import { requireLogin, requireGuest, requireAdmin } from '../middleware/auth.js'
 import xss from 'xss';
 
 const router = Router();
+const wantsJson = (req) => (req.get('accept') || '').includes('application/json');
 
 // GET /login
 router.get('/login', requireGuest, async function(req, res) {
@@ -22,15 +23,25 @@ router.post('/login', requireGuest, async function(req, res) {
     const user = await loginUser(email, password);
     req.session.user = user;
 
+    const redirectTo = user.role === 'admin' ? '/admin' : '/explore';
+    if (wantsJson(req)) {
+      return res.json({ ok: true, redirectTo });
+    }
+
     if (user.role === 'admin') {
       return res.redirect('/admin');
     } else {
       return res.redirect('/explore');
     }
   } catch (e) {
+    const errorMessage = typeof e === 'string' ? e : 'Unable to log in';
+    if (wantsJson(req)) {
+      return res.status(400).json({ ok: false, error: errorMessage });
+    }
+
     return res.status(400).render('login', {
       title: 'Login',
-      error: e,
+      error: errorMessage,
       email: body.email
     });
   }
@@ -60,6 +71,9 @@ router.post('/signup', requireGuest, async function(req, res) {
     const result = await createUser(firstName, lastName, email, password);
 
     if (result.signupCompleted === true) {
+      if (wantsJson(req)) {
+        return res.json({ ok: true, redirectTo: '/login' });
+      }
       return res.redirect('/login');
     }
 
@@ -73,6 +87,14 @@ router.post('/signup', requireGuest, async function(req, res) {
       errorMessage.toLowerCase().includes('email') &&
       (errorMessage.toLowerCase().includes('already') ||
        errorMessage.toLowerCase().includes('used'));
+
+    if (wantsJson(req)) {
+      return res.status(400).json({
+        ok: false,
+        error: errorMessage,
+        emailError: isDuplicateEmail ? 'An account with this email already exists' : ''
+      });
+    }
 
     return res.status(400).render('signup', {
       title: 'Sign Up',

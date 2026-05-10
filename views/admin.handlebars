@@ -3,4 +3,11 @@
     <h1>Admin Moderation</h1>
     <p>Reviewing as <strong>{{user.firstName}}</strong> ({{user.email}})</p>
   </header>
+
+  {{> adminReviewsTable reviews=allReviews}}
+  {{> adminCommentsTable comments=allComments}}
+  {{> adminPendingLocationsTable pending=pendingLocations}}
 </article>
+
+<script src="/js/admin-moderation.js"></script>
+<script src="/js/admin-locations.js"></script>
