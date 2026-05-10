@@ -8,7 +8,7 @@
     "longitude": -74.01375579519738,
     "phone": "(212) 514-3700",
     "website": "http://www.oldnycustomhouse.gov/",
-    "priceCategory": null
+    "priceCategory": "Free"
   },
   {
     "name": "Alice Austen House Museum",
@@ -19,7 +19,7 @@
     "longitude": -74.06303178855111,
     "phone": "(718) 816-4506",
     "website": "http://www.aliceausten.org/",
-    "priceCategory": null
+    "priceCategory": "$"
   },
   {
     "name": "American Academy of Arts and Letters",
@@ -30,7 +30,7 @@
     "longitude": -73.94729768541572,
     "phone": "(212) 368-5900",
     "website": "http://www.artsandletters.org/",
-    "priceCategory": null
+    "priceCategory": "Free"
   },
   {
     "name": "American Folk Art Museum",
@@ -41,7 +41,7 @@
     "longitude": -73.97810302110001,
     "phone": "(212) 265-1040",
     "website": "http://www.folkartmuseum.org/",
-    "priceCategory": null
+    "priceCategory": "Free"
   },
   {
     "name": "American Immigration History Center",
@@ -52,7 +52,7 @@
     "longitude": -74.0396848374904,
     "phone": "(212) 363-3200",
     "website": "http://www.ellisisland.org/",
-    "priceCategory": null
+    "priceCategory": "Free"
   },
   {
     "name": "American Museum of Natural History",
@@ -63,7 +63,7 @@
     "longitude": -73.97364816377815,
     "phone": "(212) 769-5100",
     "website": "http://www.amnh.org/",
-    "priceCategory": null
+    "priceCategory": "$$$"
   },
   {
     "name": "American Numismatic Society",
@@ -74,7 +74,7 @@
     "longitude": -74.00701187920873,
     "phone": "(212) 571-4470",
     "website": "http://www.numismatics.org/",
-    "priceCategory": null
+    "priceCategory": "Free"
   },
   {
     "name": "Americas Society",
@@ -85,7 +85,7 @@
     "longitude": -73.96597045258356,
     "phone": "(212) 249-8950",
     "website": "http://as.americas-society.org/",
-    "priceCategory": null
+    "priceCategory": "Free"
   },
   {
     "name": "Anne Frank Center USA",
@@ -96,7 +96,7 @@
     "longitude": -73.99963036903092,
     "phone": "(212) 431-7993",
     "website": "http://www.annefrank.com/",
-    "priceCategory": null
+    "priceCategory": "$"
   },
   {
     "name": "Asia Society",
@@ -107,7 +107,7 @@
     "longitude": -73.96428395726613,
     "phone": "(212) 288-6400",
     "website": "http://www.asiasociety.org/",
-    "priceCategory": null
+    "priceCategory": "$$"
   },
   {
     "name": "Audubon Terrace",
@@ -118,7 +118,7 @@
     "longitude": -73.94654590494326,
     "phone": null,
     "website": "http://www.washington-heights.us/history/archives/audubon_terrace_museum_group_102.html",
-    "priceCategory": null
+    "priceCategory": "Free"
   },
   {
     "name": "Bartow-Pell Mansion",
@@ -129,7 +129,7 @@
     "longitude": -73.80557949995756,
     "phone": "(718) 885-1461",
     "website": "http://bartowpellmansionmuseum.org/index.php",
-    "priceCategory": null
+    "priceCategory": "$"
   },
   {
     "name": "Pelham Bay Park",
@@ -140,7 +140,7 @@
     "longitude": null,
     "phone": null,
     "website": null,
-    "priceCategory": null
+    "priceCategory": "Free"
   },
   {
     "name": "Van Cortlandt Park",
@@ -151,7 +151,7 @@
     "longitude": null,
     "phone": null,
     "website": null,
-    "priceCategory": null
+    "priceCategory": "Free"
   },
   {
     "name": "Freshkills Park",
@@ -162,7 +162,7 @@
     "longitude": null,
     "phone": null,
     "website": null,
-    "priceCategory": null
+    "priceCategory": "Free"
   },
   {
     "name": "Flushing Meadows Corona Park",
@@ -173,7 +173,7 @@
     "longitude": null,
     "phone": null,
     "website": null,
-    "priceCategory": null
+    "priceCategory": "Free"
   },
   {
     "name": "Central Park",
@@ -184,7 +184,7 @@
     "longitude": null,
     "phone": null,
     "website": null,
-    "priceCategory": null
+    "priceCategory": "Free"
   },
   {
     "name": "Marine Park",
@@ -195,7 +195,7 @@
     "longitude": null,
     "phone": null,
     "website": null,
-    "priceCategory": null
+    "priceCategory": "Free"
   },
   {
     "name": "LaTourette Park & Golf Course",
@@ -206,7 +206,7 @@
     "longitude": null,
     "phone": null,
     "website": null,
-    "priceCategory": null
+    "priceCategory": "Free"
   },
   {
     "name": "Bronx Park",
@@ -217,7 +217,7 @@
     "longitude": null,
     "phone": null,
     "website": null,
-    "priceCategory": null
+    "priceCategory": "Free"
   },
   {
     "name": "Franklin D. Roosevelt Boardwalk and Beach",
@@ -228,7 +228,7 @@
     "longitude": null,
     "phone": null,
     "website": null,
-    "priceCategory": null
+    "priceCategory": "Free"
   },
   {
     "name": "Alley Pond Park",
@@ -239,7 +239,7 @@
     "longitude": null,
     "phone": null,
     "website": null,
-    "priceCategory": null
+    "priceCategory": "Free"
   },
   {
     "name": "Prospect Park",
@@ -250,7 +250,7 @@
     "longitude": null,
     "phone": null,
     "website": null,
-    "priceCategory": null
+    "priceCategory": "Free"
   },
   {
     "name": "Forest Park",
@@ -261,7 +261,7 @@
     "longitude": null,
     "phone": null,
     "website": null,
-    "priceCategory": null
+    "priceCategory": "Free"
   },
   {
     "name": "Delancey Street Pizza",
@@ -272,7 +272,7 @@
     "longitude": -73.990927110527,
     "phone": "(646) 448-4388",
     "website": null,
-    "priceCategory": null
+    "priceCategory": "$"
   },
   {
     "name": "Just Salad",
@@ -283,7 +283,7 @@
     "longitude": -73.989479170444,
     "phone": "(347) 305-7457",
     "website": null,
-    "priceCategory": null
+    "priceCategory": "$$"
   },
   {
     "name": "Cici's Kitchen",
@@ -294,7 +294,7 @@
     "longitude": -73.927429363377,
     "phone": "(917) 529-0966",
     "website": null,
-    "priceCategory": null
+    "priceCategory": "$"
   },
   {
     "name": "Anjappar",
@@ -305,7 +305,7 @@
     "longitude": -73.98256964798,
     "phone": "(908) 768-9384",
     "website": null,
-    "priceCategory": null
+    "priceCategory": "$$"
   },
   {
     "name": "Tabernacle Steakhouse",
@@ -316,7 +316,7 @@
     "longitude": -73.993228799787,
     "phone": "(917) 599-1192",
     "website": null,
-    "priceCategory": null
+    "priceCategory": "$$$$"
   },
   {
     "name": "One If By Land, Two If By Sea",
@@ -327,7 +327,7 @@
     "longitude": -74.002760296206,
     "phone": "(212) 255-8649",
     "website": null,
-    "priceCategory": null
+    "priceCategory": "$$$$"
   },
   {
     "name": "Dunkin',' Baskin Robbins",
@@ -338,7 +338,7 @@
     "longitude": -73.958687788924,
     "phone": "(212) 734-5465",
     "website": null,
-    "priceCategory": null
+    "priceCategory": "$"
   },
   {
     "name": "Obriens",
@@ -349,7 +349,7 @@
     "longitude": -73.992843064264,
     "phone": "(212) 244-6736",
     "website": null,
-    "priceCategory": null
+    "priceCategory": "$$"
   },
   {
     "name": "Sama'za",
@@ -360,7 +360,7 @@
     "longitude": -73.987917564599,
     "phone": "(212) 933-0260",
     "website": null,
-    "priceCategory": null
+    "priceCategory": "$$"
   },
   {
     "name": "House Of Domes",
@@ -371,7 +371,7 @@
     "longitude": -74.006184003808,
     "phone": "(212) 206-3766",
     "website": null,
-    "priceCategory": null
+    "priceCategory": "$$"
   },
   {
     "name": "Fay Da Bakery",
@@ -382,7 +382,7 @@
     "longitude": -73.997947413963,
     "phone": "(718) 456-9331",
     "website": null,
-    "priceCategory": null
+    "priceCategory": "$"
   },
   {
     "name": "Fresh & Co",
@@ -393,7 +393,7 @@
     "longitude": -73.980314527962,
     "phone": "(212) 513-7374",
     "website": null,
-    "priceCategory": null
+    "priceCategory": "$$"
   },
   {
     "name": "Ciccio Cincin",
@@ -404,7 +404,7 @@
     "longitude": -74.008493942773,
     "phone": "(646) 416-3226",
     "website": null,
-    "priceCategory": null
+    "priceCategory": "$$$"
   },
   {
     "name": "Natura Cafe / Dream Downtown",
@@ -415,7 +415,7 @@
     "longitude": -74.003081852298,
     "phone": "(917) 539-5220",
     "website": null,
-    "priceCategory": null
+    "priceCategory": "$$$"
   },
   {
     "name": "Smoove Ice Cream",
@@ -426,7 +426,7 @@
     "longitude": -73.992694964123,
     "phone": "(646) 596-8429",
     "website": null,
-    "priceCategory": null
+    "priceCategory": "$"
   },
   {
     "name": "Starbucks",
@@ -437,7 +437,7 @@
     "longitude": -73.992394460992,
     "phone": "(212) 594-7846",
     "website": null,
-    "priceCategory": null
+    "priceCategory": "$$"
   },
   {
     "name": "Dunkin",
@@ -448,7 +448,7 @@
     "longitude": -73.986721616379,
     "phone": "(212) 254-1814",
     "website": null,
-    "priceCategory": null
+    "priceCategory": "$"
   },
   {
     "name": "Ground Central Coffee Company",
@@ -459,7 +459,7 @@
     "longitude": -73.974792479748,
     "phone": "(646) 370-3265",
     "website": null,
-    "priceCategory": null
+    "priceCategory": "$$"
   },
   {
     "name": "Fellini Coffee",
@@ -470,7 +470,7 @@
     "longitude": -74.006304407111,
     "phone": "(646) 370-3370",
     "website": null,
-    "priceCategory": null
+    "priceCategory": "$$"
   },
   {
     "name": "Cafe Bloom",
@@ -481,7 +481,7 @@
     "longitude": -73.93352963721,
     "phone": "(646) 429-8734",
     "website": null,
-    "priceCategory": null
+    "priceCategory": "$"
   },
   {
     "name": "Blank Street Coffee",
@@ -492,7 +492,7 @@
     "longitude": -74.002056497579,
     "phone": "(646) 639-9559",
     "website": null,
-    "priceCategory": null
+    "priceCategory": "$"
   },
   {
     "name": "Birch Coffee",
@@ -503,6 +503,6 @@
     "longitude": -74.008513064714,
     "phone": "(917) 841-6564",
     "website": null,
-    "priceCategory": null
+    "priceCategory": "$$"
   }
 ]

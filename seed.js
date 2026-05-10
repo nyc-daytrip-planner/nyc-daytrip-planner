@@ -10,25 +10,42 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import bcrypt from 'bcryptjs';
+import { ObjectId } from 'mongodb';
 import { dbConnection, closeConnection } from './config/mongoConnection.js';
-import { locations } from './config/mongoCollections.js';
+import { users, locations, reviews, comments } from './config/mongoCollections.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const FIXTURE_PATH = path.join(__dirname, 'seed-data', 'locations.json');
+const LOCATIONS_PATH = path.join(__dirname, 'seed-data', 'locations.json');
+const ACCOUNTS_PATH = path.join(__dirname, 'seed-data', 'accounts.json');
+const PENDING_LOCATIONS_PATH = path.join(__dirname, 'seed-data', 'pendingLocations.json');
+const PENDING_REVIEWS_PATH = path.join(__dirname, 'seed-data', 'pendingReviews.json');
+const PENDING_COMMENTS_PATH = path.join(__dirname, 'seed-data', 'pendingComments.json');
 
 async function seed() {
-  const raw = await fs.readFile(FIXTURE_PATH, 'utf8');
-  const fixture = JSON.parse(raw);
+  const locationsRaw = await fs.readFile(LOCATIONS_PATH, 'utf8');
+  const accountsRaw = await fs.readFile(ACCOUNTS_PATH, 'utf8');
+  const pendingLocationsRaw = await fs.readFile(PENDING_LOCATIONS_PATH, 'utf8');
+  const pendingReviewsRaw = await fs.readFile(PENDING_REVIEWS_PATH, 'utf8');
+  const pendingCommentsRaw = await fs.readFile(PENDING_COMMENTS_PATH, 'utf8');
+  const locationsFixture = JSON.parse(locationsRaw);
+  const accountsFixture = JSON.parse(accountsRaw);
+  const pendingLocationsFixture = JSON.parse(pendingLocationsRaw);
+  const pendingReviewsFixture = JSON.parse(pendingReviewsRaw);
+  const pendingCommentsFixture = JSON.parse(pendingCommentsRaw);
 
   const db = await dbConnection();
-  console.log(`Seeding "${db.databaseName}" from ${path.relative(__dirname, FIXTURE_PATH)}`);
+  console.log(`Seeding "${db.databaseName}" from ${path.relative(__dirname, LOCATIONS_PATH)}`);
 
   const locationsCol = await locations();
+  const usersCol = await users();
+  const reviewsCol = await reviews();
+  const commentsCol = await comments();
   const dropped = await locationsCol.deleteMany({ addedBy: null });
   console.log(`Removed ${dropped.deletedCount} previously seeded location(s).`);
 
   const now = new Date();
-  const docs = fixture.map((loc) => ({
+  const docs = locationsFixture.map((loc) => ({
     ...loc,
     averageRating: null,
     totalReviews: 0,
@@ -39,6 +56,90 @@ async function seed() {
 
   const result = await locationsCol.insertMany(docs);
   console.log(`Inserted ${result.insertedCount} location(s).`);
+
+  // Add sample accounts from seed-data/accounts.json.
+  const userIdByEmail = new Map();
+  for (const acct of accountsFixture.accounts || []) {
+    const email = String(acct.email || '').toLowerCase();
+    if (!email) continue;
+
+    const hashedPassword = await bcrypt.hash(String(acct.password || 'Password123!'), 10);
+    const upsertResult = await usersCol.findOneAndUpdate(
+      { email },
+      {
+        $set: {
+          firstName: acct.firstName || 'Test',
+          lastName: acct.lastName || 'User',
+          email,
+          hashedPassword,
+          role: acct.role === 'admin' ? 'admin' : 'user'
+        },
+        $setOnInsert: {
+          favoriteLocations: [],
+          friends: [],
+          createdAt: now
+        }
+      },
+      { upsert: true, returnDocument: 'after' }
+    );
+    if (upsertResult && upsertResult._id) {
+      userIdByEmail.set(email, upsertResult._id);
+    }
+  }
+  console.log(`Inserted ${userIdByEmail.size} account(s).`);
+
+  // Add pending locations from seed-data/pendingLocations.json.
+  const fallbackUserId = userIdByEmail.get('user@dayoutnyc.com') || userIdByEmail.get('admin@dayoutnyc.com') || null;
+  let pendingInserted = 0;
+  for (const pending of pendingLocationsFixture.pendingLocations || []) {
+    await locationsCol.insertOne({
+      ...pending,
+      averageRating: null,
+      totalReviews: 0,
+      addedBy: fallbackUserId ? new ObjectId(fallbackUserId) : null,
+      approved: false,
+      createdAt: now
+    });
+    pendingInserted++;
+  }
+  console.log(`Inserted ${pendingInserted} pending location(s).`);
+
+  // Add sample moderation review entries.
+  let reviewsInserted = 0;
+  for (const r of pendingReviewsFixture.reviews || []) {
+    const authorEmail = String(r.authorEmail || '').toLowerCase();
+    const userId = userIdByEmail.get(authorEmail);
+    const location = await locationsCol.findOne({ name: r.locationName }, { projection: { _id: 1 } });
+    if (!userId || !location) continue;
+
+    await reviewsCol.insertOne({
+      locationId: new ObjectId(location._id),
+      userId: new ObjectId(userId),
+      rating: Number(r.rating),
+      reviewText: String(r.reviewText || ''),
+      createdAt: now
+    });
+    reviewsInserted++;
+  }
+  console.log(`Inserted ${reviewsInserted} moderation review(s).`);
+
+  // Add sample moderation comment entries.
+  let commentsInserted = 0;
+  for (const c of pendingCommentsFixture.comments || []) {
+    const authorEmail = String(c.authorEmail || '').toLowerCase();
+    const userId = userIdByEmail.get(authorEmail);
+    const location = await locationsCol.findOne({ name: c.locationName }, { projection: { _id: 1 } });
+    if (!userId || !location) continue;
+
+    await commentsCol.insertOne({
+      locationId: new ObjectId(location._id),
+      userId: new ObjectId(userId),
+      text: String(c.text || ''),
+      createdAt: now
+    });
+    commentsInserted++;
+  }
+  console.log(`Inserted ${commentsInserted} moderation comment(s).`);
 
   await closeConnection();
   console.log('Done.');
