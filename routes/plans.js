@@ -219,7 +219,7 @@ router.post('/activities', async (req, res) => {
     res.redirect(`/plans/${planId}`)
   } catch (e) {
     if (e.status === 400 && locationId) {
-      return res.redirect(`/locations/${locationId}?planError=${encodeURIComponent(e.message || e)}`)
+      return res.redirect(`/explore/${locationId}?planError=${encodeURIComponent(e.message || e)}`)
     }
     res.status(e.status || 500).render('error', { error: e.message || e })
   }
