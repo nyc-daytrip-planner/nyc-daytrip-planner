@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { locations, users } from '../config/mongoCollections.js';
+import { locations, users, reviews } from '../config/mongoCollections.js';
 import { checkId, checkString } from '../helpers.js';
 
 const ALLOWED_TYPES = ['cafe', 'museum', 'park', 'restaurant', 'other'];
@@ -313,6 +313,84 @@ export async function isFavoritedByUser(userId, locationId) {
   );
   if (!user) return false;
   return (user.favoriteLocations || []).some((id) => id.toString() === locationId);
+}
+
+// Recommend locations by scoring each location's type by the user's own
+// 4+ star ratings, then ranking unvisited locations of those types.
+export async function getRecommendationsForUser(userId, limit = 8) {
+  userId = checkId(userId);
+  if (!Number.isInteger(limit) || limit < 1) limit = 8;
+  if (limit > 24) limit = 24;
+
+  const userOid = new ObjectId(userId);
+  const reviewsCol = await reviews();
+  const locationsCol = await locations();
+
+  const userReviews = await reviewsCol.find({ userId: userOid }).toArray();
+  const reviewedIds = userReviews.map((r) => r.locationId);
+
+  if (userReviews.length === 0) {
+    const fallback = await locationsCol
+      .find({ approved: true, averageRating: { $ne: null } })
+      .sort({ averageRating: -1, totalReviews: -1, name: 1 })
+      .limit(limit)
+      .toArray();
+    return { reason: 'top-rated', locations: fallback.map(serializeLocation) };
+  }
+
+  const reviewedLocs = await locationsCol
+    .find({ _id: { $in: reviewedIds } })
+    .project({ type: 1 })
+    .toArray();
+  const typeByLocId = new Map(reviewedLocs.map((l) => [l._id.toString(), l.type]));
+
+  const typeScore = new Map();
+  for (const r of userReviews) {
+    if (r.rating < 4) continue;
+    const t = typeByLocId.get(r.locationId.toString());
+    if (!t) continue;
+    typeScore.set(t, (typeScore.get(t) || 0) + r.rating);
+  }
+
+  if (typeScore.size === 0) {
+    const fallback = await locationsCol
+      .find({
+        approved: true,
+        averageRating: { $ne: null },
+        _id: { $nin: reviewedIds }
+      })
+      .sort({ averageRating: -1, totalReviews: -1, name: 1 })
+      .limit(limit)
+      .toArray();
+    return { reason: 'top-rated', locations: fallback.map(serializeLocation) };
+  }
+
+  const preferredTypes = [...typeScore.keys()];
+
+  const candidates = await locationsCol
+    .find({
+      approved: true,
+      type: { $in: preferredTypes },
+      _id: { $nin: reviewedIds },
+      averageRating: { $ne: null }
+    })
+    .toArray();
+
+  candidates.sort((a, b) => {
+    const scoreA = (typeScore.get(a.type) || 0) * (a.averageRating || 0);
+    const scoreB = (typeScore.get(b.type) || 0) * (b.averageRating || 0);
+    if (scoreB !== scoreA) return scoreB - scoreA;
+    if ((b.totalReviews || 0) !== (a.totalReviews || 0)) {
+      return (b.totalReviews || 0) - (a.totalReviews || 0);
+    }
+    return a.name.localeCompare(b.name);
+  });
+
+  return {
+    reason: 'based-on-reviews',
+    preferredTypes,
+    locations: candidates.slice(0, limit).map(serializeLocation)
+  };
 }
 
 export { ALLOWED_TYPES };
