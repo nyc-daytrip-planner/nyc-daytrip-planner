@@ -243,7 +243,8 @@ router.get('/:id', async function (req, res) {
       isFavorited,
       isPending: !location.approved,
       userPlans,
-      user: req.session.user
+      user: req.session.user,
+      planError: req.query.planError || null
     });
   } catch (e) {
     if (typeof e === 'string' && /no location found/i.test(e)) {

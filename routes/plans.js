@@ -1,7 +1,157 @@
 import { Router } from 'express';
 const router = Router();
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import planData from '../data/plans.js'
-import { checkEmail, checkId } from '../helpers.js';
+import { getLocationById } from '../data/locations.js';
+import { locations } from '../config/mongoCollections.js';
+import distance from '@turf/distance';
+import { checkId } from '../helpers.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const seedLocationsPath = path.join(__dirname, '..', 'seed-data', 'locations.json');
+let seedLocationByNameCache = null;
+
+async function getSeedLocationByNameMap() {
+  if (seedLocationByNameCache) return seedLocationByNameCache;
+
+  try {
+    const raw = await fs.readFile(seedLocationsPath, 'utf8');
+    const list = JSON.parse(raw);
+    const map = new Map();
+    for (const loc of list) {
+      const key = String(loc?.name || '').trim().toLowerCase();
+      if (!key) continue;
+      map.set(key, loc);
+    }
+    seedLocationByNameCache = map;
+    return map;
+  } catch (e) {
+    seedLocationByNameCache = new Map();
+    return seedLocationByNameCache;
+  }
+}
+
+function estimateMinutesFromMeters(distanceMeters) {
+  const distanceMiles = distanceMeters * 0.000621371;
+  const minutes = 5 + (distanceMiles * 4);
+  return Math.max(5, Math.round(minutes));
+}
+
+async function computeTravelEstimates(activities) {
+  if (!Array.isArray(activities) || activities.length < 2) {
+    return { travelLegs: [], totalTravelMinutes: 0, unknownLegCount: 0 };
+  }
+
+  const locationsCol = await locations();
+  const seedLocationByName = await getSeedLocationByNameMap();
+  const locationCache = new Map();
+
+  const escapeRegex = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  const resolveLocationForActivity = async (activity) => {
+    const id = activity?.locationId?.toString?.() || '';
+    const name = (activity?.locationName || '').trim();
+    const cacheKey = id ? `id:${id}` : `name:${name.toLowerCase()}`;
+
+    if (locationCache.has(cacheKey)) return locationCache.get(cacheKey);
+
+    let found = null;
+    if (id) {
+      try {
+        found = await getLocationById(id);
+      } catch (e) {
+        found = null;
+      }
+    }
+
+    if (!found && name) {
+      found = await locationsCol.findOne({
+        name: { $regex: `^${escapeRegex(name)}$`, $options: 'i' }
+      });
+    }
+
+    if (
+      found &&
+      !(typeof found.latitude === 'number' && typeof found.longitude === 'number') &&
+      name
+    ) {
+      const seedLoc = seedLocationByName.get(name.toLowerCase());
+      if (seedLoc && typeof seedLoc.latitude === 'number' && typeof seedLoc.longitude === 'number') {
+        found = {
+          ...found,
+          latitude: seedLoc.latitude,
+          longitude: seedLoc.longitude
+        };
+      }
+    }
+
+    locationCache.set(cacheKey, found);
+    return found;
+  };
+
+  const resolvedLocations = [];
+  for (const activity of activities) {
+    resolvedLocations.push(await resolveLocationForActivity(activity));
+  }
+
+  const travelLegs = [];
+  let totalTravelMinutes = 0;
+  let unknownLegCount = 0;
+
+  for (let i = 0; i < activities.length - 1; i++) {
+    const fromAct = activities[i];
+    const toAct = activities[i + 1];
+    const fromLoc = resolvedLocations[i];
+    const toLoc = resolvedLocations[i + 1];
+
+    let minutes = null;
+    if (
+      fromLoc &&
+      toLoc &&
+      typeof fromLoc.latitude === 'number' &&
+      typeof fromLoc.longitude === 'number' &&
+      typeof toLoc.latitude === 'number' &&
+      typeof toLoc.longitude === 'number'
+    ) {
+      const fromPoint = {
+        type: 'Feature',
+        properties: {},
+        geometry: {
+          type: 'Point',
+          coordinates: [fromLoc.longitude, fromLoc.latitude]
+        }
+      };
+      const toPoint = {
+        type: 'Feature',
+        properties: {},
+        geometry: {
+          type: 'Point',
+          coordinates: [toLoc.longitude, toLoc.latitude]
+        }
+      };
+      const distanceMiles = distance(fromPoint, toPoint, { units: 'miles' });
+      const distanceMeters = distanceMiles * 1609.34;
+      minutes = estimateMinutesFromMeters(distanceMeters);
+      totalTravelMinutes += minutes;
+    } else {
+      unknownLegCount++;
+    }
+
+    travelLegs.push({
+      fromName: fromAct.locationName || 'Unknown',
+      toName: toAct.locationName || 'Unknown',
+      minutes
+    });
+  }
+
+  return {
+    travelLegs,
+    totalTravelMinutes,
+    unknownLegCount
+  };
+}
 
 router.route('/') // main page
   .get(async (req, res) => {
@@ -50,12 +200,14 @@ router.get('/all', async (req, res) => { // DONE
 })
 
 router.post('/activities', async (req, res) => {
+  const locationId = req.body?.locationId
+
   try {
     const userId = checkId(req.session.user._id)
 
     if (!req.body) return res.status(400).render('error', { error: 'No data provided' })
 
-    const { planId, locationId, locationName, startTime, endTime, notes } = req.body
+    const { planId, locationName, startTime, endTime, notes } = req.body
     if (!planId || !locationId || !locationName || !startTime || !endTime)
       return res.status(400).render('error', { error: 'Missing required fields' })
 
@@ -66,6 +218,9 @@ router.post('/activities', async (req, res) => {
     await planData.addActivity(planId, locationId, locationName, startTime, endTime, notes)
     res.redirect(`/plans/${planId}`)
   } catch (e) {
+    if (e.status === 400 && locationId) {
+      return res.redirect(`/locations/${locationId}?planError=${encodeURIComponent(e.message || e)}`)
+    }
     res.status(e.status || 500).render('error', { error: e.message || e })
   }
 })
@@ -112,7 +267,15 @@ router.route('/:planId') // plan specific page
       })
 
       const isOwner = plan.userId.toString() === userId
-      res.render('plans', { title: 'Current Plan', plan, isOwner })
+      const travel = await computeTravelEstimates(plan.activities || []);
+      res.render('plans', {
+        title: 'Current Plan',
+        plan,
+        isOwner,
+        travelLegs: travel.travelLegs,
+        totalTravelMinutes: travel.totalTravelMinutes,
+        unknownLegCount: travel.unknownLegCount
+      })
     } catch (e) {
       res.status(e.status || 500).render('error', { error: e.message || e })
     }

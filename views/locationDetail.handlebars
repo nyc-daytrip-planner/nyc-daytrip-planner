@@ -49,8 +49,11 @@
   <div id="add-to-plan-modal" class="modal hidden">
     <div class="modal-content">
       <h2>Add to Plan</h2>
+      {{#if planError}}
+      <p class="plan-error">{{planError}}</p>
+      {{/if}}
       <form method="POST" action="/plans/activities">
-        <input type="hidden" name="locationId" id="modal-location-id" />
+        <input type="hidden" name="locationId" id="modal-location-id" value="{{location._id}}" />
         <input type="hidden" name="locationName" value="{{location.name}}" />
 
         <label>Select Plan</label>
