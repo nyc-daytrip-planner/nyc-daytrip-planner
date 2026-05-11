@@ -42,6 +42,24 @@
 <a href="/explore">+ Add Activity from Explore</a>
 {{/if}}
 
+{{#if travelLegs.length}}
+<section class="plan-travel-estimates">
+  <h3>Estimated Travel Time</h3>
+  <p>Total estimated travel time: ~{{totalTravelMinutes}} minutes</p>
+  {{#if unknownLegCount}}
+  <p class="muted">Some travel legs could not be estimated due to missing location coordinates.</p>
+  {{/if}}
+  <ul>
+    {{#each travelLegs}}
+      <li>
+        {{this.fromName}} -> {{this.toName}}:
+        {{#if this.minutes}}~{{this.minutes}} min{{else}}N/A{{/if}}
+      </li>
+    {{/each}}
+  </ul>
+</section>
+{{/if}}
+
 {{#if plan.activities}}
 {{#each plan.activities}}
 <div>

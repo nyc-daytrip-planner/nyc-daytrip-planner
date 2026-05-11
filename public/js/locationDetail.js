@@ -46,5 +46,10 @@
     window.addEventListener('click', (e) => {
       if (e.target === modal) modal.classList.add('hidden')
     })
+
+    // Auto-open the modal if redirected back with a time conflict error
+    if (modal.querySelector('.plan-error')) {
+      modal.classList.remove('hidden')
+    }
   }
 })();

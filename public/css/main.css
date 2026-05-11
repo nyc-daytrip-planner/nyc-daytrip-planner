@@ -478,3 +478,13 @@ button {
 .hidden {
   display: none;
 }
+
+.plan-error {
+  color: #c0392b;
+  background: #fdecea;
+  border: 1px solid #e74c3c;
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  font-size: 0.9em;
+}
