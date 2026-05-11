@@ -18,6 +18,7 @@ A web app for planning NYC day trips. Browse real NYC locations (museums, parks,
 - **Reviews** — 1–5 star rating + text up to 2 000 characters, one review per user per location, author can edit or delete, admin can delete any
 - **Comments** — text up to 1 000 characters, unlimited per user per location, author or admin can delete
 - **Plans** — create dated plans, add time-slotted activities from any location, mark public/private, list all your plans, delete plans or individual activities
+- **Friends** — search for users by name or email, send friend requests, accept or decline incoming requests, view friends list with their latest public plan, remove friends
 - **Suggest a location** — any signed-in user can submit a new location; it stays pending until an admin approves. Admin-created locations auto-approve
 - **Admin dashboard** — moderation tables for reviews, comments, and pending locations; one click deletes or approves
 
