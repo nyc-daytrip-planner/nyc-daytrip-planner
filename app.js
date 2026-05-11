@@ -53,9 +53,9 @@ app.use((req, res, next) => {
   // console.log('The request has all the following cookies:');
   // console.log(req.cookies);
 
-  if (!req.cookies.lastAccessed) {
-    console.log('This user has never accessed the site before');
-  }
+  //if (!req.cookies.lastAccessed) {
+    //console.log('This user has never accessed the site before');
+  //}
 
   if (totalRequests % 5 === 0) {
     const anHourAgo = new Date();

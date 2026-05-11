@@ -15,6 +15,28 @@
   <p class="error">{{error}}</p>
   {{/if}}
 
+  {{#if recommendations.locations.length}}
+  <section class="recommendations-row">
+    <h2 class="recommendations-title">
+      {{#if (eq recommendations.reason "based-on-reviews")}}
+        Recommended for you
+      {{else}}
+        Top rated in NYC
+      {{/if}}
+    </h2>
+    {{#if (eq recommendations.reason "based-on-reviews")}}
+    <p class="recommendations-sub muted">Based on the places you've reviewed.</p>
+    {{else}}
+    <p class="recommendations-sub muted">Review a few spots to get personalized picks.</p>
+    {{/if}}
+    <ul class="recommendations-scroll">
+      {{#each recommendations.locations}}
+      {{> locationCard location=this user=../user}}
+      {{/each}}
+    </ul>
+  </section>
+  {{/if}}
+
   <form class="explore-filters" method="GET" action="/explore">
     <div class="filter-row">
       <label>

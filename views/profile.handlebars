@@ -23,4 +23,78 @@
     <p>You have no friends added yet.</p>
     {{/if}}
   </div>
+
+  <div class="profile-card">
+    <h2>Favorite Spots</h2>
+
+    {{#if favoriteSpots.length}}
+    <ul>
+      {{#each favoriteSpots}}
+      <li>
+        <a href="/explore/{{this._id}}">{{this.name}}</a>
+        ({{this.type}})
+      </li>
+      {{/each}}
+    </ul>
+    {{else}}
+    <p>You have no favorite spots yet.</p>
+    {{/if}}
+  </div>
+
+  <div class="profile-card">
+    <h2>My Plans</h2>
+
+    {{#if plans.length}}
+    <ul>
+      {{#each plans}}
+      <li>
+        <a href="/plans/{{this._id}}">{{this.title}}</a>
+        {{#if this.date}} - {{this.date}}{{/if}}
+      </li>
+      {{/each}}
+    </ul>
+    {{else}}
+    <p>You have no plans yet.</p>
+    {{/if}}
+  </div>
+
+  <div class="profile-card">
+    <h2>Saved Plans</h2>
+
+    {{#if savedPlans.length}}
+    {{#each savedPlans}}
+    <div>
+      <h3><a href="/plans/{{this._id}}">{{this.title}}</a></h3>
+      {{#if this.date}}<p>Date: {{this.date}}</p>{{/if}}
+      <p>Visibility: {{#if this.isPublic}}Public{{else}}Private{{/if}}</p>
+
+      <form method="POST" action="/plans/{{this._id}}?_method=PUT">
+        <input type="hidden" name="status" value="saved" />
+        <input type="hidden" name="isPublic" value="{{#if this.isPublic}}false{{else}}true{{/if}}" />
+        <button type="submit">
+          {{#if this.isPublic}}Make Private{{else}}Make Public{{/if}}
+        </button>
+      </form>
+
+      <form method="POST" action="/plans/{{this._id}}/photos">
+        <label for="photo-{{this._id}}">Add Photo URL</label>
+        <input id="photo-{{this._id}}" type="url" name="photoUrl" required placeholder="https://..." />
+        <button type="submit">Add Photo</button>
+      </form>
+
+      {{#if this.photos.length}}
+      <ul>
+        {{#each this.photos}}
+        <li><a href="{{this}}" target="_blank" rel="noopener noreferrer">{{this}}</a></li>
+        {{/each}}
+      </ul>
+      {{else}}
+      <p>No photos added yet.</p>
+      {{/if}}
+    </div>
+    {{/each}}
+    {{else}}
+    <p>You have no saved plans yet.</p>
+    {{/if}}
+  </div>
 </section>

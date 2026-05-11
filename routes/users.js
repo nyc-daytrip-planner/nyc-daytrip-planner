@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { createUser, loginUser, getUserById } from '../data/users.js';
+import { getFavoriteLocationsForUser } from '../data/locations.js';
 import { requireLogin, requireGuest, requireAdmin } from '../middleware/auth.js';
+import planData from '../data/plans.js';
 import friendData from '../data/friends.js';
 import xss from 'xss';
 
@@ -161,6 +163,18 @@ router.post('/signup', requireGuest, async function (req, res) {
 router.get('/profile', requireLogin, async function (req, res) {
   try {
     const user = await getUserById(req.session.user._id);
+    const rawPlans = await planData.getAllPlans(req.session.user._id);
+    const plans = rawPlans.map((plan) => ({
+      ...plan,
+      _id: plan._id?.toString ? plan._id.toString() : String(plan._id),
+      title: typeof plan.title === 'string' && plan.title.trim().length > 0 ? plan.title : 'Untitled Plan',
+      date: plan.date || '',
+      status: plan.status || 'active',
+      isPublic: !!plan.isPublic,
+      photos: Array.isArray(plan.photos) ? plan.photos : []
+    }));
+    const favoriteSpots = await getFavoriteLocationsForUser(req.session.user._id);
+    const savedPlans = plans.filter((plan) => plan.status === 'saved');
     const friendsList = await friendData.getFriends(req.session.user._id);
 
     res.render('profile', {
@@ -169,6 +183,11 @@ router.get('/profile', requireLogin, async function (req, res) {
       lastName: user.lastName,
       email: user.email,
       favoriteLocations: user.favoriteLocations,
+      favoriteSpots,
+      friends: user.friends,
+      createdAt: user.createdAt,
+      plans,
+      savedPlans,
       friends: friendsList,
       createdAt: user.createdAt
     });

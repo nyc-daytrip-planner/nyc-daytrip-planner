@@ -44,8 +44,8 @@ router.post('/request/:userId', async (req, res) => {
 router.post('/accept/:reqId', async (req, res) => {
   // POST accept a friend request
   try {
-    const recId = checkId(req.session.user._id)
-    const reqId = checkId(req.session.user._id)
+    const recId = req.session.user._id
+    const reqId = req.session.reqId
     await friendData.acceptFriendReq(reqId, recId)
     res.redirect('/friends')
   } catch (e) {

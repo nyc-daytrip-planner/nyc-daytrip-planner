@@ -238,6 +238,26 @@ const exportedMethods = {
 
     if (result.modifiedCount === 0) throw { status: 500, message: "Error: could not delete activity" }
     return await this.getPlanById(planId)
+  },
+
+  async addPhoto(planId, photoUrl) {
+    planId = checkId(planId)
+    photoUrl = checkString(photoUrl)
+    if (!/^https?:\/\//i.test(photoUrl)) {
+      throw { status: 400, message: 'Photo URL must start with http:// or https://' }
+    }
+
+    const planCollection = await plans()
+    const result = await planCollection.updateOne(
+      { _id: new ObjectId(planId) },
+      {
+        $addToSet: { photos: photoUrl },
+        $set: { updatedAt: new Date() }
+      }
+    )
+
+    if (result.modifiedCount === 0) throw { status: 500, message: "Error: could not add photo" }
+    return await this.getPlanById(planId)
   }
 }
 

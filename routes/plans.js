@@ -70,6 +70,24 @@ router.post('/activities', async (req, res) => {
   }
 })
 
+router.post('/:planId/photos', async (req, res) => {
+  try {
+    const userId = req.session.user._id
+    const planId = req.params.planId
+    const photoUrl = req.body.photoUrl
+
+    const plan = await planData.getPlanById(planId)
+    if (plan.userId.toString() !== userId) {
+      return res.status(403).render('error', { error: 'Unauthorized' })
+    }
+
+    await planData.addPhoto(planId, photoUrl)
+    res.redirect('/profile')
+  } catch (e) {
+    res.status(e.status || 500).render('error', { error: e.message || e })
+  }
+})
+
 router.route('/:planId') // plan specific page
   .get(async (req, res) => { // DONE
     // this will retrieve a plan specified by the user on the frontend

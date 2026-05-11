@@ -9,6 +9,7 @@ import {
   rejectLocation,
   toggleFavoriteLocation,
   isFavoritedByUser,
+  getRecommendationsForUser,
   ALLOWED_TYPES
 } from '../data/locations.js';
 import { getReviewsForLocation } from '../data/reviews.js';
@@ -102,7 +103,20 @@ router.get('/', async function (req, res) {
 
   try {
     const list = await browseLocations(filters);
-    return res.render('explore', { ...vm, locations: list, empty: list.length === 0 });
+    let recommendations = null;
+    if (req.session.user) {
+      try {
+        recommendations = await getRecommendationsForUser(req.session.user._id, 8);
+      } catch (recErr) {
+        console.error('recommendations failed:', recErr);
+      }
+    }
+    return res.render('explore', {
+      ...vm,
+      locations: list,
+      empty: list.length === 0,
+      recommendations
+    });
   } catch (e) {
     return res.status(400).render('explore', {
       ...vm,
