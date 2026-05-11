@@ -13,7 +13,7 @@ A web app for planning NYC day trips. Browse real NYC locations (museums, parks,
 ## Features
 
 - **Auth** — signup, login, logout, profile. AJAX-aware: form posts get redirects, requests with `Accept: application/json` get JSON responses
-- **Explore** — grid of approved locations with filters (type, price tier, minimum rating, free-text search) and sort (top-rated, most recent, name)
+- **Explore** — grid of approved locations with filters and sort
 - **Location detail** — address, contact, average rating, "favorite" toggle, "+ Add to Plan" modal, plus reviews and comments sections inline
 - **Reviews** — 1–5 star rating + text up to 2 000 characters, one review per user per location, author can edit or delete, admin can delete any
 - **Comments** — text up to 1 000 characters, unlimited per user per location, author or admin can delete
