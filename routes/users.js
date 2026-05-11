@@ -3,6 +3,7 @@ import { createUser, loginUser, getUserById } from '../data/users.js';
 import { getFavoriteLocationsForUser } from '../data/locations.js';
 import { requireLogin, requireGuest, requireAdmin } from '../middleware/auth.js';
 import planData from '../data/plans.js';
+import friendData from '../data/friends.js';
 import xss from 'xss';
 
 const router = Router();
@@ -60,17 +61,17 @@ function validateSignupInput(firstName, lastName, email, password, confirmPasswo
 }
 
 // GET /login
-router.get('/login', requireGuest, async function(req, res) {
+router.get('/login', requireGuest, async function (req, res) {
   res.render('login', { title: 'Login' });
 });
 
 // POST /login
-router.post('/login', requireGuest, async function(req, res) {
+router.post('/login', requireGuest, async function (req, res) {
   let body = req.body;
   if (!body) body = {};
 
   try {
-    let email    = xss(body.email);
+    let email = xss(body.email);
     let password = xss(body.password);
     validateLoginInput(email, password);
 
@@ -102,20 +103,20 @@ router.post('/login', requireGuest, async function(req, res) {
 });
 
 // GET /signup
-router.get('/signup', requireGuest, async function(req, res) {
+router.get('/signup', requireGuest, async function (req, res) {
   res.render('signup', { title: 'Sign Up' });
 });
 
 // POST /signup
-router.post('/signup', requireGuest, async function(req, res) {
+router.post('/signup', requireGuest, async function (req, res) {
   let body = req.body;
   if (!body) body = {};
 
   try {
-    let firstName       = xss(body.firstName);
-    let lastName        = xss(body.lastName);
-    let email           = xss(body.email);
-    let password        = xss(body.password);
+    let firstName = xss(body.firstName);
+    let lastName = xss(body.lastName);
+    let email = xss(body.email);
+    let password = xss(body.password);
     let confirmPassword = xss(body.confirmPassword);
     validateSignupInput(firstName, lastName, email, password, confirmPassword);
 
@@ -137,7 +138,7 @@ router.post('/signup', requireGuest, async function(req, res) {
     const isDuplicateEmail =
       errorMessage.toLowerCase().includes('email') &&
       (errorMessage.toLowerCase().includes('already') ||
-       errorMessage.toLowerCase().includes('used'));
+        errorMessage.toLowerCase().includes('used'));
 
     if (wantsJson(req)) {
       return res.status(400).json({
@@ -159,7 +160,7 @@ router.post('/signup', requireGuest, async function(req, res) {
 });
 
 // GET /profile
-router.get('/profile', requireLogin, async function(req, res) {
+router.get('/profile', requireLogin, async function (req, res) {
   try {
     const user = await getUserById(req.session.user._id);
     const rawPlans = await planData.getAllPlans(req.session.user._id);
@@ -174,6 +175,7 @@ router.get('/profile', requireLogin, async function(req, res) {
     }));
     const favoriteSpots = await getFavoriteLocationsForUser(req.session.user._id);
     const savedPlans = plans.filter((plan) => plan.status === 'saved');
+    const friendsList = await friendData.getFriends(req.session.user._id);
 
     res.render('profile', {
       title: 'Profile',
@@ -185,7 +187,9 @@ router.get('/profile', requireLogin, async function(req, res) {
       friends: user.friends,
       createdAt: user.createdAt,
       plans,
-      savedPlans
+      savedPlans,
+      friends: friendsList,
+      createdAt: user.createdAt
     });
   } catch (e) {
     return res.status(500).render('error', {
@@ -196,8 +200,8 @@ router.get('/profile', requireLogin, async function(req, res) {
 });
 
 // POST /logout
-router.post('/logout', requireLogin, async function(req, res) {
-  req.session.destroy(function() {
+router.post('/logout', requireLogin, async function (req, res) {
+  req.session.destroy(function () {
     res.clearCookie('DayOutNYC');
     res.redirect('/login');
   });

@@ -9,6 +9,7 @@
 {{#if plan}}
 <p>{{plan.title}} - {{plan.date}}</p>
 
+{{#if isOwner}}
 <form method="POST" action="/plans/{{plan._id}}?_method=PUT">
   <label>Title</label>
   <input type="text" name="title" value="{{plan.title}}" />
@@ -34,9 +35,12 @@
 <form method="POST" action="/plans/{{plan._id}}?_method=DELETE">
   <button type="submit">Delete</button>
 </form>
+{{/if}}
 
 <h2>Activities</h2>
+{{#if isOwner}}
 <a href="/explore">+ Add Activity from Explore</a>
+{{/if}}
 
 {{#if plan.activities}}
 {{#each plan.activities}}
@@ -45,9 +49,11 @@
     <strong>{{this.locationName}}</strong>
     <p>{{this.startTime}} - {{this.endTime}}: {{this.notes}}</p>
   </a>
+  {{#if isOwner}}
   <form method="POST" action="/plans/{{../plan._id}}/activities/{{this._id}}?_method=DELETE">
     <button type="submit">Delete Activity</button>
   </form>
+  {{/if}}
 </div>
 {{/each}}
 {{else}}

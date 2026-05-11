@@ -1,12 +1,13 @@
 import { Router } from 'express';
 const router = Router();
 import planData from '../data/plans.js'
+import { checkEmail, checkId } from '../helpers.js';
 
 router.route('/') // main page
   .get(async (req, res) => {
     const date = req.query.date || new Date().toISOString().split('T')[0]
     try {
-      const userId = req.session.user._id
+      const userId = checkId(req.session.user._id)
       const plan = await planData.getPlanByDate(userId, date)
       res.render('planner', { title: 'Planner', plan, date })
     } catch (e) {
@@ -18,7 +19,7 @@ router.route('/') // main page
     // this will give the user the ability to create a new plan
     const fallbackDate = req.body?.date || new Date().toISOString().split('T')[0]
     try {
-      const userId = req.session.user._id
+      const userId = checkId(req.session.user._id)
 
       if (!req.body) return res.status(400).render('error', { error: 'No data provided' })
       const { title, date, locations } = req.body
@@ -39,7 +40,7 @@ router.route('/') // main page
 router.get('/all', async (req, res) => { // DONE
   // this will retrieve all of the saved plans belonging to the logged-in user 
   try {
-    const userId = req.session.user._id
+    const userId = checkId(req.session.user._id)
     const plans = await planData.getAllPlans(userId)
 
     res.render('plans', { title: 'My Plans', plans })
@@ -50,8 +51,13 @@ router.get('/all', async (req, res) => { // DONE
 
 router.post('/activities', async (req, res) => {
   try {
-    const userId = req.session.user._id
+    const userId = checkId(req.session.user._id)
+
+    if (!req.body) return res.status(400).render('error', { error: 'No data provided' })
+
     const { planId, locationId, locationName, startTime, endTime, notes } = req.body
+    if (!planId || !locationId || !locationName || !startTime || !endTime)
+      return res.status(400).render('error', { error: 'Missing required fields' })
 
     const plan = await planData.getPlanById(planId)
     if (plan.userId.toString() !== userId)
@@ -86,11 +92,12 @@ router.route('/:planId') // plan specific page
   .get(async (req, res) => { // DONE
     // this will retrieve a plan specified by the user on the frontend
     try {
-      const userId = req.session.user._id
-      const planId = req.params.planId
+      const userId = checkId(req.session.user._id)
+      const planId = checkId(req.params.planId)
 
       const plan = await planData.getPlanById(planId)
-      if (plan.userId.toString() !== userId)
+
+      if (plan.userId.toString() !== userId && !plan.isPublic)
         return res.status(403).render('error', { error: 'Unauthorized' })
 
       plan.activities.sort((a, b) => {
@@ -104,7 +111,8 @@ router.route('/:planId') // plan specific page
         return toMinutes(a.startTime) - toMinutes(b.startTime)
       })
 
-      res.render('plans', { title: 'Current Plan', plan })
+      const isOwner = plan.userId.toString() === userId
+      res.render('plans', { title: 'Current Plan', plan, isOwner })
     } catch (e) {
       res.status(e.status || 500).render('error', { error: e.message || e })
     }
@@ -112,8 +120,8 @@ router.route('/:planId') // plan specific page
   .put(async (req, res) => { // DONE
     // update the time, change date, etc. of a pre-existing plan
     try {
-      const userId = req.session.user._id
-      const planId = req.params.planId
+      const userId = checkId(req.session.user._id)
+      const planId = checkId(req.params.planId)
 
       const plan = await planData.getPlanById(planId)
       if (plan.userId.toString() !== userId)
@@ -132,8 +140,8 @@ router.route('/:planId') // plan specific page
   .delete(async (req, res) => { // DONE
     // delete a plan
     try {
-      const userId = req.session.user._id
-      const planId = req.params.planId
+      const userId = checkId(req.session.user._id)
+      const planId = checkId(req.params.planId)
       const plan = await planData.getPlanById(planId)
       if (plan.userId.toString() !== userId)
         return res.status(403).render('error', { error: 'Unauthorized' })
@@ -149,8 +157,8 @@ router.route('/:planId/activities')
   .get(async (req, res) => { // DONE
     // this will retrive all of the activities/locations of a specific plan
     try {
-      const userId = req.session.user._id
-      const planId = req.params.planId
+      const userId = checkId(req.session.user._id)
+      const planId = checkId(req.params.planId)
 
       const plan = await planData.getPlanById(planId)
       if (plan.userId.toString() !== userId)
@@ -164,8 +172,8 @@ router.route('/:planId/activities')
   .post(async (req, res) => { // DONE
     // add an activity to a plan
     try {
-      const userId = req.session.user._id
-      const planId = req.params.planId
+      const userId = checkId(req.session.user._id)
+      const planId = checkId(req.params.planId)
       const { locationId, startTime, endTime, notes } = req.body
 
       const plan = await planData.getPlanById(planId)
@@ -183,7 +191,7 @@ router.route('/:planId/activities/:activityId')
   .put(async (req, res) => { // DONE
     // update a activity and its parameters
     try {
-      const userId = req.session.user._id
+      const userId = checkId(req.session.user._id)
       const { planId, activityId } = req.params
       const { startTime, endTime, notes } = req.body
 
@@ -200,7 +208,7 @@ router.route('/:planId/activities/:activityId')
   .delete(async (req, res) => { // DONE
     // delete a specific activity
     try {
-      const userId = req.session.user._id
+      const userId = checkId(req.session.user._id)
       const { planId, activityId } = req.params
 
       const plan = await planData.getPlanById(planId)

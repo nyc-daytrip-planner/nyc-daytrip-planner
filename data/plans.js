@@ -89,13 +89,40 @@ const exportedMethods = {
   },
 
   async addActivity(planId, locationId, locationName, startTime, endTime, notes = "") {
-    // POST
     planId = checkId(planId)
     locationId = checkId(locationId)
     startTime = checkTime(startTime)
     endTime = checkTime(endTime)
 
-    if (typeof notes != 'string') throw { status: 400, message: "Error: notes must of type string" }
+    if (typeof notes != 'string') throw { status: 400, message: "Error: notes must be of type string" }
+
+    const toMinutes = (time) => {
+      const [hourMin, period] = time.split(/(AM|PM)/)
+      let [hours, minutes] = hourMin.trim().split(':').map(Number)
+      if (period === 'PM' && hours !== 12) hours += 12
+      if (period === 'AM' && hours === 12) hours = 0
+      return hours * 60 + minutes
+    }
+
+    const newStart = toMinutes(startTime)
+    const newEnd = toMinutes(endTime)
+
+    if (newStart >= newEnd) throw { status: 400, message: "Error: start time must be before end time" }
+
+    const planCollection = await plans()
+    const plan = await planCollection.findOne({ _id: new ObjectId(planId) })
+
+    for (const activity of plan.activities) {
+      const existingStart = toMinutes(activity.startTime)
+      const existingEnd = toMinutes(activity.endTime)
+
+      if (newStart < existingEnd && newEnd > existingStart) {
+        throw {
+          status: 400,
+          message: `Time conflict with existing activity: ${activity.locationName} (${activity.startTime} - ${activity.endTime})`
+        }
+      }
+    }
 
     const newActivity = {
       _id: new ObjectId(),
@@ -106,7 +133,6 @@ const exportedMethods = {
       notes
     }
 
-    const planCollection = await plans()
     const result = await planCollection.updateOne(
       { _id: new ObjectId(planId) },
       {

@@ -1,0 +1,53 @@
+<h1>Friends</h1>
+
+<h2>Find Friends</h2>
+<form method="GET" action="/friends/search">
+  <input type="text" name="q" value="{{query}}" placeholder="Search by name or email" />
+  <button type="submit">Search</button>
+</form>
+
+{{#if searchResults}}
+<h3>Search Results</h3>
+{{#each searchResults}}
+<div>
+  <p>{{this.firstName}} {{this.lastName}} — {{this.email}}</p>
+  <form method="POST" action="/friends/request/{{this._id}}">
+    <button type="submit">Send Request</button>
+  </form>
+</div>
+{{/each}}
+{{/if}}
+
+{{#if pending}}
+<h2>Pending Requests</h2>
+{{#each pending}}
+<div>
+  <p>Friend request from {{this.firstName}} {{this.lastName}}</p>
+  <form method="POST" action="/friends/accept/{{this._id}}">
+    <button type="submit">Accept</button>
+  </form>
+  <form method="POST" action="/friends/decline/{{this._id}}">
+    <button type="submit">Decline</button>
+  </form>
+</div>
+{{/each}}
+{{/if}}
+
+<h2>My Friends</h2>
+{{#if friendsList}}
+{{#each friendsList}}
+<div>
+  <p>{{this.firstName}} {{this.lastName}}</p>
+  {{#if this.recentPlan}}
+  <p>Latest plan: <a href="/plans/{{this.recentPlan._id}}">{{this.recentPlan.title}}</a> - {{this.recentPlan.date}}</p>
+  {{else}}
+  <p>No public plans yet</p>
+  {{/if}}
+  <form method="POST" action="/friends/remove/{{this._id}}">
+    <button type="submit">Remove Friend</button>
+  </form>
+</div>
+{{/each}}
+{{else}}
+<p>No friends yet</p>
+{{/if}}
