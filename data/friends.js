@@ -104,6 +104,42 @@ const exportedMethods = {
     }).toArray()
 
     return pending
+  },
+
+  async searchUsers(query, currentUserId) {
+    currentUserId = checkId(currentUserId)
+    if (!query || query.trim().length === 0) throw { status: 400, message: 'Search query is required' }
+
+    const userCollection = await users()
+    const results = await userCollection.find({
+      _id: { $ne: new ObjectId(currentUserId) },
+      $or: [
+        { firstName: { $regex: query, $options: 'i' } },
+        { lastName: { $regex: query, $options: 'i' } },
+        { email: { $regex: query, $options: 'i' } }
+      ]
+    }).toArray()
+
+    return results
+  },
+
+  async removeFriend(userId, friendId) {
+    userId = checkId(userId)
+    friendId = checkId(friendId)
+
+    const userCollection = await users()
+
+    await userCollection.updateOne(
+      { _id: new ObjectId(userId) },
+      { $pull: { friends: new ObjectId(friendId) } }
+    )
+
+    await userCollection.updateOne(
+      { _id: new ObjectId(friendId) },
+      { $pull: { friends: new ObjectId(userId) } }
+    )
+
+    return { status: 'removed' }
   }
 }
 
