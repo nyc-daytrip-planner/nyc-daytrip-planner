@@ -190,6 +190,39 @@ button {
   text-align: center;
 }
 
+/* recommendations row (Amazon-style horizontal scroller) */
+.recommendations-row {
+  border: 1px solid lightgray;
+  background: #fafafa;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.recommendations-title {
+  margin: 0 0 0.1rem 0;
+  font-size: 1.1em;
+}
+
+.recommendations-sub {
+  margin: 0 0 0.6rem 0;
+}
+
+.recommendations-scroll {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 0.4rem;
+}
+
+.recommendations-scroll .location-card {
+  flex: 0 0 220px;
+  background: white;
+}
+
 /* location card grid */
 .location-grid {
   list-style: none;
